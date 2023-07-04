@@ -9,7 +9,7 @@ void limit_norm(float *x, float *y, float limit);
 int float_to_uint(float x, float x_min, float x_max, int bits);
 float uint_to_float(int x_int, float x_min, float x_max, int bits);
 
-void float32_to_float16(float *float32,unsigned short int *float16);
-void float16_to_float32(unsigned short int *float16,float *float32);
+void float32_to_float16(float *float32, unsigned short int *float16);
+void float16_to_float32(unsigned short int *float16, float *float32);
 
 #endif

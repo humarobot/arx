@@ -29,60 +29,59 @@ typedef struct sockaddr_can can_socket_address_t;
 /**
  * Facilitates frame transmission and reception via a CAN adapter
  */
-class SocketCAN : public CANAdapter
-{
+class SocketCAN : public CANAdapter {
 private:
-    interface_request_t if_request;
+  interface_request_t if_request;
 
-    can_socket_address_t addr;
+  can_socket_address_t addr;
 
-    pthread_t receiver_thread_id;
+  pthread_t receiver_thread_id;
 
 public:
-    /**
-     * CAN socket file descriptor
-     */
-    int sockfd = -1;
+  /**
+   * CAN socket file descriptor
+   */
+  int sockfd = -1;
 
-    /**
-     * Request for the child thread to terminate
-     */
-    bool terminate_receiver_thread = false;
+  /**
+   * Request for the child thread to terminate
+   */
+  bool terminate_receiver_thread = false;
 
-    bool receiver_thread_running = false;
+  bool receiver_thread_running = false;
 
-    /** Constructor */
-    SocketCAN();
-    /** Destructor */
-    ~SocketCAN();
+  /** Constructor */
+  SocketCAN();
+  /** Destructor */
+  ~SocketCAN();
 
-    /**
-     * Open and bind socket
-     */
-    void open(const char *);
+  /**
+   * Open and bind socket
+   */
+  void open(const char *);
 
-    /**
-     * Close and unbind socket
-     */
-    void close();
+  /**
+   * Close and unbind socket
+   */
+  void close();
 
-    /**
-     * Returns whether the socket is open or closed
-     *
-     * @retval true     Socket is open
-     * @retval false    Socket is closed
-     */
-    bool is_open();
+  /**
+   * Returns whether the socket is open or closed
+   *
+   * @retval true     Socket is open
+   * @retval false    Socket is closed
+   */
+  bool is_open();
 
-    /**
-     * Sends the referenced frame to the bus
-     */
-    void transmit(can_frame_t *);
+  /**
+   * Sends the referenced frame to the bus
+   */
+  void transmit(can_frame_t *);
 
-    /**
-     * Starts a new thread, that will wait for socket events
-     */
-    void start_receiver_thread();
+  /**
+   * Starts a new thread, that will wait for socket events
+   */
+  void start_receiver_thread();
 };
 
 #endif

@@ -5,19 +5,19 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 
-class Teleop
-{
+class Teleop {
 public:
-    Teleop() = default;
-    ~Teleop() = default;
-    void teleop_init(ros::NodeHandle& nh);
-    double axes_[8] = {0.0};
-    int buttons_[11] = {0};
-    clock_t rv_time_ = clock();
+  Teleop() = default;
+  ~Teleop() = default;
+  void teleop_init(ros::NodeHandle &nh);
+  double axes_[8] = {0.0};
+  int buttons_[11] = {0};
+  clock_t rv_time_ = clock();
+
 private:
-    void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
-    // ros::NodeHandle& nh_;
-    ros::Subscriber joy_sub_;
+  void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
+  // ros::NodeHandle& nh_;
+  ros::Subscriber joy_sub_;
 };
 
 Teleop *Teleop_Use();
