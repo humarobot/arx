@@ -9,38 +9,29 @@ arm_control::Imu g_imu_msg;
 arm_control::Motor g_wheel1_msg;
 arm_control::Motor g_wheel2_msg;
 
-void CAN0_ReceiveHandlerProxy(can_frame_t *frame, void *ptr) {
-  ((can *)ptr)->CAN0_ReceiveFrame(frame);
-}
-
-void CAN1_ReceiveHandlerProxy(can_frame_t *frame2, void *ptr) {
-  ((can *)ptr)->CAN1_ReceiveFrame(frame2);
+void CAN2_ReceiveHandlerProxy(can_frame_t *frame, void *ptr) {
+  ((can *)ptr)->CAN2_ReceiveFrame(frame);
 }
 
 can::can() {
-  can0_adapter.reception_handler_data = (void *)this;
-  can0_adapter.reception_handler = &CAN0_ReceiveHandlerProxy;
-  can0_adapter.open("can0");
-
-  can1_adapter.reception_handler_data = (void *)this;
-  can1_adapter.reception_handler = &CAN1_ReceiveHandlerProxy;
-  can1_adapter.open("can1");
+  can2_adapter.reception_handler_data = (void *)this;
+  can2_adapter.reception_handler = &CAN2_ReceiveHandlerProxy;
+  can2_adapter.open("can2");
 
   ros::Time::init();
 }
 
 can::~can() {
-  can0_adapter.close();
-  can1_adapter.close();
+  can2_adapter.close();
 }
 
 void can::CAN_cmd_readMotorID(void) {
   can_frame_t frame;
   MotorIDReading(frame.data, &frame.can_id, &frame.can_dlc);
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }
 
@@ -48,10 +39,10 @@ void can::CAN_cmd_getMotorParam(uint16_t motor_id, uint8_t param_cmd) {
   can_frame_t frame;
   GetMotorParameter(motor_id, param_cmd, frame.data, &frame.can_id,
                     &frame.can_dlc);
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }
 
@@ -60,10 +51,10 @@ void can::CAN_cmd_init(uint16_t motor_id, uint8_t cmd) {
   can_frame_t frame;
   frame.can_dlc = 8;
   MotorSetting(motor_id, cmd);
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }
 void can::Can_cmd_position(uint16_t motor_id, float pos, uint16_t spd,
@@ -72,10 +63,10 @@ void can::Can_cmd_position(uint16_t motor_id, float pos, uint16_t spd,
   frame.can_dlc = 8;
   send_motor_position(motor_id, pos, spd, cur, ack_status, frame.data,
                       &frame.can_id);
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }
 
@@ -85,10 +76,10 @@ void can::Can_cmd_all(uint16_t motor_id, float kp, float kd, float pos,
   frame.can_dlc = 8;
   send_motor_ctrl_cmd(motor_id, kp, kd, pos, spd, tor, frame.data,
                       &frame.can_id);
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }
 
@@ -101,10 +92,10 @@ void can::CAN_cmd_fpc1(float kp[4], float kd[4], float pos[4], float spd[4],
     frame.can_dlc = 8;
     send_motor_ctrl_cmd(i + 1, kp[i], kd[i], pos[i], spd[i], tor[i], frame.data,
                         &frame.can_id);
-    if (can0_adapter.is_open()) {
-      can0_adapter.transmit(&frame);
+    if (can2_adapter.is_open()) {
+      can2_adapter.transmit(&frame);
     } else {
-      std::cout << "Fail to open can0" << std::endl;
+      std::cout << "Fail to open can2" << std::endl;
     }
   }
 }
@@ -118,10 +109,10 @@ void can::CAN_cmd_fpc2(float kp[4], float kd[4], float pos[4], float spd[4],
     frame.can_dlc = 8;
     send_motor_ctrl_cmd(i + 5, kp[i], kd[i], pos[i], spd[i], tor[i], frame.data,
                         &frame.can_id);
-    if (can0_adapter.is_open()) {
-      can0_adapter.transmit(&frame);
+    if (can2_adapter.is_open()) {
+      can2_adapter.transmit(&frame);
     } else {
-      std::cout << "Fail to open can0" << std::endl;
+      std::cout << "Fail to open can2" << std::endl;
     }
   }
 }
@@ -209,9 +200,9 @@ void can::GetImuGyro(uint8_t *data) {
 }
 
 /**
- * @description: 收到can0的消息
+ * @description: 收到can2的消息
  */
-void can::CAN0_ReceiveFrame(can_frame_t *frame) {
+void can::CAN2_ReceiveFrame(can_frame_t *frame) {
 
   switch (frame->can_id) {
   case 0x01:
@@ -311,16 +302,6 @@ void can::CAN0_ReceiveFrame(can_frame_t *frame) {
   }
 }
 
-/**
- * @description: 收到can0的消息
- */
-void can::CAN1_ReceiveFrame(can_frame_t *frame) {
-  // switch (frame->can_id)
-  // {
-  //     break;
-  // }
-}
-
 //  01  02  03零点设置
 void can::MotorSetting(uint16_t motor_id, uint8_t cmd) {
   can_frame_t frame;
@@ -334,10 +315,10 @@ void can::MotorSetting(uint16_t motor_id, uint8_t cmd) {
   frame.data[2] = 0x00;
   frame.data[3] = cmd;
 
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }
 
@@ -361,9 +342,9 @@ void can::CAN_RMD_chassis(int16_t motor1, int16_t motor2, int16_t motor3,
   frame.data[5] = motor3 >> 8;
   frame.data[6] = motor4;
   frame.data[7] = motor4 >> 8;
-  if (can0_adapter.is_open()) {
-    can0_adapter.transmit(&frame);
+  if (can2_adapter.is_open()) {
+    can2_adapter.transmit(&frame);
   } else {
-    std::cout << "Fail to open can0" << std::endl;
+    std::cout << "Fail to open can2" << std::endl;
   }
 }

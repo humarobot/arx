@@ -82,8 +82,7 @@ public:
   // sensor_msgs::Imu ImuMsg;
   // Motor_measure_t Motor[MOTOR_NUM] = {0};
 
-  void CAN0_ReceiveFrame(can_frame_t *frame);
-  void CAN1_ReceiveFrame(can_frame_t *frame);
+  void CAN2_ReceiveFrame(can_frame_t *frame);
 
   void CAN_cmd_readMotorID(void);
   void CAN_cmd_getMotorParam(uint16_t motor_id, uint8_t param_cmd);
@@ -112,8 +111,7 @@ public:
                        int16_t motor4);
 
 private:
-  SocketCAN can0_adapter;
-  SocketCAN can1_adapter;
+  SocketCAN can2_adapter;
 };
 
 #endif

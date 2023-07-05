@@ -20,13 +20,13 @@ int main(int argc, char **argv) {
   ros::NodeHandle node;
   arx_arm ARX_ARM((bool)IS_REAL);
   ros::Rate loop_rate(200);
-  can CAN_Handlej;
+  // can CAN_Handlej;
 
   while (ros::ok()) {
     ARX_ARM.get_curr_pos();
     // Motor Setting 0 position
     // ARX_ARM.RealInit();
-    ARX_ARM.update_real();
+    // ARX_ARM.update_real();
 
     ros::spinOnce();
     loop_rate.sleep();

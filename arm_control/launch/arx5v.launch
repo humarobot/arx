@@ -1,7 +1,7 @@
 <launch>
 
     <!-- <param name="/use_sim_time" value="true" /> -->
-    <arg name="reconfigure" default="true" />
+    <arg name="reconfigure" default="false" />
 
     <node if="$(arg reconfigure)" name="configure" pkg="rqt_reconfigure" type="rqt_reconfigure"> </node>
     <node name="robot" pkg="arm_control" type="robot" respawn="true" output="screen"> </node>
