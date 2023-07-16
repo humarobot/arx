@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by
+Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="ultron" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world" />
+
+  <joint name="fixed" type="fixed">
+    <parent link="world" />
+    <child link="base_link" />
+  </joint>
+  <!--base_link-->
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-2.9956E-05 3.0541E-05 0.027289"
+        rpy="0 0 0" />
+      <mass
+        value="0.44061" />
+      <inertia
+        ixx="0.00017"
+        ixy="0.00000"
+        ixz="0.00000"
+        iyy="0.00018"
+        iyz="0.00000"
+        izz="0.00016" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link1">
+    <inertial>
+      <origin
+        xyz="-0.00012207 -6.5868E-06 0.016529"
+        rpy="0 0 0" />
+      <mass
+        value="0.078442" />
+      <inertia
+        ixx="0.00009"
+        ixy="0.00000"
+        ixz="0.00000"
+        iyy="0.00003"
+        iyz="0.00000"
+        izz="0.00009" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1"
+    type="revolute">
+    <origin
+      xyz="0 0 0.0603"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="link1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-10"
+      upper="10"
+      effort="100"
+      velocity="1000" />
+  </joint>
+  <link
+    name="link2">
+    <inertial>
+      <origin
+        xyz="-0.13238 0.0021952 0.00011182"
+        rpy="0 0 0" />
+      <mass
+        value="1.073" />
+      <inertia
+        ixx="0.00050"
+        ixy="0.00000"
+        ixz="-0.00004"
+        iyy="0.01596"
+        iyz="0.00000"
+        izz="0.01602" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2"
+    type="revolute">
+    <origin
+      xyz="0 0 0.0402"
+      rpy="0 0 0" />
+    <parent
+      link="link1" />
+    <child
+      link="link2" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-10"
+      upper="10"
+      effort="100"
+      velocity="1000" />
+  </joint>
+  <link
+    name="link3">
+    <inertial>
+      <origin
+        xyz="0.18794 0.0016321 -0.051557"
+        rpy="0 0 0" />
+      <mass
+        value="0.50518" />
+      <inertia
+        ixx="0.00037"
+        ixy="-0.00001"
+        ixz="-0.00039"
+        iyy="0.00393"
+        iyz="0.00001"
+        izz="0.00390" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint3"
+    type="revolute">
+    <origin
+      xyz="-0.264 0 0"
+      rpy="-3.1416 0 0" />
+    <parent
+      link="link2" />
+    <child
+      link="link3" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-10"
+      upper="10"
+      effort="100"
+      velocity="1000" />
+  </joint>
+  <link
+    name="link4">
+    <inertial>
+      <origin
+        xyz="0.054496 -0.00085704 0.0020301"
+        rpy="0 0 0" />
+      <mass
+        value="0.34332" />
+      <inertia
+        ixx="0.00018"
+        ixy="-0.00001"
+        ixz="0.00000"
+        iyy="0.00022"
+        iyz="0.00001"
+        izz="0.00026" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint4"
+    type="revolute">
+    <origin
+      xyz="0.245 0 -0.056"
+      rpy="0 0 0" />
+    <parent
+      link="link3" />
+    <child
+      link="link4" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-10"
+      upper="10"
+      effort="100"
+      velocity="1000" />
+  </joint>
+  <link
+    name="link5">
+    <inertial>
+      <origin
+        xyz="0.053308 5.0047E-05 -0.0012315"
+        rpy="0 0 0" />
+      <mass
+        value="0.33126" />
+      <inertia
+        ixx="0.00017"
+        ixy="0.00000"
+        ixz="-0.00001"
+        iyy="0.00024"
+        iyz="0.00000"
+        izz="0.00021" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link5.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link5.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint5"
+    type="revolute">
+    <origin
+      xyz="0.06 -0.002 0.0005"
+      rpy="0 0 0" />
+    <parent
+      link="link4" />
+    <child
+      link="link5" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-10"
+      upper="10"
+      effort="100"
+      velocity="1000" />
+  </joint>
+  <link
+    name="link6">
+    <inertial>
+      <origin
+        xyz="0.0057186 2.3419E-17 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.022383" />
+      <inertia
+        ixx="0.00000"
+        ixy="0.00000"
+        ixz="0.00000"
+        iyy="0.00000"
+        iyz="0.00000"
+        izz="0.00000" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link6.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ultron/meshes/link6.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint6"
+    type="revolute">
+    <origin
+      xyz="0.078 0 -0.0005"
+      rpy="3.1416 0 0" />
+    <parent
+      link="link5" />
+    <child
+      link="link6" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-10"
+      upper="10"
+      effort="100"
+      velocity="1000" />
+  </joint>
+
+  <!-- add transmissions -->
+  <xacro:macro name="transmission_block" params="joint_name">
+    <transmission name="${joint_name}_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${joint_name}">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${joint_name}_motor">
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <xacro:transmission_block joint_name="joint1" />
+  <xacro:transmission_block joint_name="joint2" />
+  <xacro:transmission_block joint_name="joint3" />
+  <xacro:transmission_block joint_name="joint4" />
+  <xacro:transmission_block joint_name="joint5" />
+  <xacro:transmission_block joint_name="joint6" />
+
+  <!-- ros_control plugins -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/ultron</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <!-- <robotNamespace>/robot_gazebo</robotNamespace> -->
+      <jointName>joint1,joint2,joint3,joint4,joint5,joint6</jointName>
+      <updateRate>50.0</updateRate>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
+  </gazebo>
+
+
+</robot>
