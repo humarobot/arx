@@ -23,6 +23,13 @@ target_link_libraries(ultron_node
   ${EIGEN3_LIBRARIES}
 )
 
+add_executable(ultron_impedende_node src/main_impedence.cpp)
+target_link_libraries(ultron_impedende_node
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+
 foreach(dir config launch meshes urdf)
 	install(DIRECTORY ${dir}/
 		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
