@@ -11,6 +11,7 @@
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
 #include "std_msgs/Float64MultiArray.h"
+#include "geometry_msgs/Pose.h"
 
 /** Dynamic-size vector type. */
 using vector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
@@ -53,6 +54,10 @@ int update_rate = 200;
 double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
 vector_t x_ref(6);
+pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
+                           Eigen::Vector3d(0.3, 0.1, 0.3));
+bool new_target = true;
+int joint_index = 0;
 
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {
   // Clear the ultron_arm_now
@@ -90,6 +95,22 @@ void jointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {
   }
 }
 
+void poseCallback(const geometry_msgs::Pose::ConstPtr &msg) {
+  ROS_INFO("End effector target position: [%f,%f,%f]", msg->position.x,
+           msg->position.y, msg->position.z);
+  ROS_INFO("End effector target orientation: [%f,%f,%f]", msg->orientation.x,
+           msg->orientation.y, msg->orientation.z, msg->orientation.w);
+  new_target = true;
+  
+  Eigen::Quaterniond q(msg->orientation.w, msg->orientation.x,
+                       msg->orientation.y, msg->orientation.z);
+  //quaternion to rotation matrix
+  Eigen::Matrix3d R = q.normalized().toRotationMatrix();
+  Eigen::Vector3d t(msg->position.x, msg->position.y, msg->position.z);
+  oMdes = pinocchio::SE3(R, t);
+  x_ref.head<3>() = t;
+}
+
 int main(int argc, char **argv) {
   // Init ros node
   ros::init(argc, argv, "ultron");
@@ -98,6 +119,8 @@ int main(int argc, char **argv) {
   // Init a joint state topic subscriber
   ros::Subscriber joint_state_sub =
       nh.subscribe("ultron/joint_states", 10, jointStateCallback);
+    // Init a pose topic subscriber
+  ros::Subscriber pose_sub = nh.subscribe("ultron/pose", 100, poseCallback);
   // Init joints effort topic publisher
   ros::Publisher joint1_pub = nh.advertise<std_msgs::Float64>(
       "/ultron/joint1_torque_controller/command", 1);
