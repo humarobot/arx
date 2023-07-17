@@ -52,6 +52,7 @@ RobotArm ultron_arm_now, ultron_arm_last;
 int update_rate = 200;
 double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
+vector_t x_ref(6);
 
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {
   // Clear the ultron_arm_now
@@ -125,9 +126,18 @@ int main(int argc, char **argv) {
   // Create data required by the algorithms
   Data data(model);
   const int JOINT_ID = 6;
-  vector_t x_ref(6);
   x_ref << 0.3, 0.0, 0.3, 0.0, 0.0, 0.0;
   vector_t x(6);
+  Eigen::Matrix<double,6,6> Kp = Eigen::Matrix<double,6,6>::Identity();
+  // Set first 3 diagonal elements to 100.0
+  Kp.diagonal().head<3>().array() = 50.0;
+  // Set last 3 diagonal elements to 20.0
+  Kp.diagonal().tail<3>().array() = 10.0;
+  Eigen::Matrix<double,6,6> Kd = Eigen::Matrix<double,6,6>::Identity();
+  // Set first 3 diagonal elements to 100.0
+  Kd.diagonal().head<3>().array() = 5.0;
+  // Set last 3 diagonal elements to 20.0
+  Kd.diagonal().tail<3>().array() = 2.0;
 
   while (ros::ok()) {
     pinocchio::forwardKinematics(model, data, q, v);
@@ -140,12 +150,20 @@ int main(int argc, char **argv) {
     Eigen::Matrix<double, 6, 6> jac;
     pinocchio::getJointJacobian(model, data, JOINT_ID, pinocchio::WORLD, jac);
     // Compute torques
-    // x << data.oMi[JOINT_ID].translation();
+    x.segment<3>(0) =  data.oMi[JOINT_ID].translation();
     // data.oMi[JOINT_ID].rotation() to euler angle
-    // x << data.oMi[JOINT_ID].rotation().eulerAngles(0,1,2);
+    // x.segment<3>(3) = data.oMi[JOINT_ID].rotation().eulerAngles(0,1,2);
+    auto rot_measure = data.oMi[JOINT_ID].rotation();
+    auto rot_desired = Eigen::Matrix3d::Identity(); 
+    // Compute the error in rotation
+    // Eigen::Matrix3d rot_err = rot_desired * rot_measure.transpose();
+    Eigen::Matrix3d rot_err = rot_measure * rot_desired.transpose();
+    Eigen::AngleAxisd angle_axis(rot_err);
+    Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
+    x.segment<3>(3) = angle;
 
-    // Eigen::VectorXd tau = data.nle - jac.transpose()*();
-    Eigen::VectorXd tau = data.nle;
+    Eigen::VectorXd tau = data.nle - jac.transpose()*(Kp*(x-x_ref)+Kd*(jac*v));
+    // Eigen::VectorXd tau = data.nle;
     // Publish the joints effort
     std_msgs::Float64 joint1_msg;
     joint1_msg.data = tau(0);
