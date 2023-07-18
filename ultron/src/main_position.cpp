@@ -11,7 +11,7 @@
 #include "App/arm_control.h"
 
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
-                     Eigen::Vector3d(0.3, 0.1, 0.3));
+                     Eigen::Vector3d(0.3, 0.0, 0.3));
 bool new_target = true;
 bool real_robot = false;
 int joint_index = 0;
@@ -72,6 +72,10 @@ int main(int argc, char **argv) {
   Eigen::VectorXd q = pinocchio::neutral(model);
   std::cout << "q: " << q.transpose() << std::endl;
   Eigen::VectorXd q_last = q;
+  Eigen::VectorXd joints_upper_limit(6);
+  Eigen::VectorXd joints_lower_limit(6);
+  joints_upper_limit << 1.57, 3.14, 3.14, 1.5, 1.5, 10.0;
+  joints_lower_limit << -1.57, 0.0, 0.0, -1.5, -1.5, -10.0;
 
   // Main loop
   while (ros::ok()) {
@@ -109,7 +113,25 @@ int main(int argc, char **argv) {
 
       if (success) {
         // std::cout << "Convergence achieved!" << std::endl;
-        ROS_INFO("\033[32m Convergence achieved! \033[0m");
+        //if q is within the joint limits
+        if ((q.array() < joints_upper_limit.array()).all() &&
+            (q.array() > joints_lower_limit.array()).all()) {
+          ROS_INFO("\033[32m Convergence achieved! \033[0m");
+          ROS_INFO("\033[32m Joint position: [%f,%f,%f,%f,%f,%f] \033[0m",
+                   q(0), q(1), q(2), q(3), q(4), q(5));
+        } else {
+          //set q to the joint limits
+          for (int i = 0; i < 6; i++) {
+            if (q(i) > joints_upper_limit(i)) {
+              q(i) = joints_upper_limit(i);
+            } else if (q(i) < joints_lower_limit(i)) {
+              q(i) = joints_lower_limit(i);
+            }
+          }
+          ROS_INFO("\033[33m Joint position out of range! \033[0m");
+          ROS_INFO("\033[33m Joint position: [%f,%f,%f,%f,%f,%f] \033[0m",
+                   q(0), q(1), q(2), q(3), q(4), q(5));
+        }
       } else {
         // std::cout << "\nWarning: the iterative algorithm has not reached "
         //              "convergence to the desired precision"

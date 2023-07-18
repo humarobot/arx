@@ -10,6 +10,7 @@
   <!-- Used for fixing robot to Gazebo 'base_link' -->
   <link name="world"/>
   <joint name="fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.0"/>
     <parent link="world"/>
     <child link="base_link"/>
   </joint>
@@ -153,7 +154,7 @@
     <parent link="link3"/>
     <child link="link4"/>
     <axis xyz="0 1 0"/>
-    <limit effort="15.0" lower="-1.3" upper="1.3" velocity="10."/>
+    <limit effort="15.0" lower="-1.5" upper="1.5" velocity="10."/>
   </joint>
   <link name="link5">
     <inertial>
@@ -182,7 +183,7 @@
     <parent link="link4"/>
     <child link="link5"/>
     <axis xyz="0 0 1"/>
-    <limit effort="15.0" lower="-1.3" upper="1.3" velocity="10.0"/>
+    <limit effort="15.0" lower="-1.5" upper="1.5" velocity="10.0"/>
   </joint>
   <link name="link6">
     <inertial>
@@ -216,7 +217,7 @@
   <transmission name="joint1_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="joint1_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -225,7 +226,7 @@
   <transmission name="joint2_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint2">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="joint2_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -234,7 +235,7 @@
   <transmission name="joint3_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint3">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="joint3_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -243,7 +244,7 @@
   <transmission name="joint4_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint4">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="joint4_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -252,7 +253,7 @@
   <transmission name="joint5_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint5">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="joint5_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -261,7 +262,7 @@
   <transmission name="joint6_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint6">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="joint6_motor">
       <mechanicalReduction>1</mechanicalReduction>
