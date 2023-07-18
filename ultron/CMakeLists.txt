@@ -3,7 +3,7 @@ project(ultron)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp std_msgs sensor_msgs rosbag)
+  roscpp std_msgs sensor_msgs rosbag arm_control)
 find_package(pinocchio)
 find_package(Eigen3)
 
@@ -16,8 +16,8 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
 )
 
-add_executable(ultron_node src/main.cpp)
-target_link_libraries(ultron_node
+add_executable(ultron_position_node src/main_position.cpp)
+target_link_libraries(ultron_position_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}

@@ -3,6 +3,7 @@
 
 #include "../Hardware/can.h"
 #include "../Hardware/motor.h"
+#include "Eigen/Core"
 #include "Hardware/teleop.h"
 #include "utility.h"
 #include <dirent.h>
@@ -171,6 +172,7 @@ public:
 
   // Get the actual position of joints from CAN controller in real mode
   void get_curr_pos();
+  void set_joints_pos(const Eigen::VectorXd& pos);
   void set_loop_rate(const unsigned int rate);
   // For startup process
   void init_step();

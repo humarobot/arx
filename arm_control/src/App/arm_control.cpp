@@ -37,6 +37,24 @@ void arx_arm::get_curr_pos() {
   current_vel[3] = rv_motor_msg[4].speed_actual_rad;
   current_vel[4] = rv_motor_msg[5].speed_actual_rad;
   current_vel[5] = rv_motor_msg[6].speed_actual_rad;
+  ROS_INFO("\033[34m >>>>>>>>>> pos >>>>>>>>>> \033[34m"); //
+  ROS_INFO("\033[34m pos = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
+           current_pos[0], current_pos[1], current_pos[2], current_pos[3],
+           current_pos[4], current_pos[5], current_pos[6]);
+}
+
+void arx_arm::set_joints_pos(const Eigen::VectorXd& pos) {
+  assert(pos.size() == 6);
+  float kp, kd;
+  kp = 500;
+  kd = 10;
+  CAN_Handlej.Can_cmd_all(1, kp, kd, pos(0), 0, 0);
+  CAN_Handlej.Can_cmd_all(2, kp, kd, pos(1), 0, 0);
+  CAN_Handlej.Can_cmd_all(4, kp, kd, pos(2), 0, 0);
+  CAN_Handlej.Can_cmd_all(5, kp, kd, pos(3), 0, 0);
+  CAN_Handlej.Can_cmd_all(6, kp, kd, pos(4), 0, 0);
+  CAN_Handlej.Can_cmd_all(7, kp, kd, pos(5), 0, 0);
+  ROS_INFO("\033[32m <<<<< Send joints command <<<<<< \033[32m");
 }
 
 void arx_arm::update_real() {
@@ -83,10 +101,7 @@ void arx_arm::motor_control() {
   // jointTorques(4)); CAN_Handlej.Can_cmd_all(7, 5, 0.5, target_pos[5],
   // 0,jointTorques(5));
 
-  ROS_INFO(">>>>>>>>>>>>>>>>> pos >>>>>>>>>>>>>>>>>>>"); //
-  ROS_INFO("\033[32m pos = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[0m",
-           current_pos[0], current_pos[1], current_pos[2], current_pos[3],
-           current_pos[4], current_pos[5], current_pos[6]);
+
 }
 // 132
 void arx_arm::can_position_control(uint16_t motor_id, float pos, uint16_t spd,

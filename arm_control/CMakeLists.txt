@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -113,7 +113,7 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
-#  LIBRARIES arm_control
+ LIBRARIES arm_control
  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs roscpp rospy std_msgs tf message_generation message_runtime
 #  DEPENDS system_lib
   CATKIN_DEPENDS kdl_parser
@@ -226,6 +226,8 @@ install(TARGETS arm_control
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
 # )
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

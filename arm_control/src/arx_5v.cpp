@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     ARX_ARM.get_curr_pos();
     // Motor Setting 0 position
     // ARX_ARM.RealInit();
-    // ARX_ARM.update_real();
+    ARX_ARM.update_real();
 
     ros::spinOnce();
     loop_rate.sleep();
