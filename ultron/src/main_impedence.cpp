@@ -16,7 +16,7 @@
 
 /** Dynamic-size vector type. */
 using vector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-bool real_robot = true;
+bool real_robot = false;
 
 // Define a robot arm joint struct to store joint information
 struct Joint {
@@ -57,7 +57,7 @@ double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
 vector_t x_ref(6);
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
-                     Eigen::Vector3d(0.3, 0.1, 0.3));
+                     Eigen::Vector3d(0., 0., 0.));
 bool new_target = true;
 int joint_index = 0;
 
