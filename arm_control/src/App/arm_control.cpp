@@ -45,15 +45,12 @@ void arx_arm::get_curr_pos() {
 
 void arx_arm::set_joints_pos(const Eigen::VectorXd& pos) {
   assert(pos.size() == 6);
-  float kp, kd;
-  kp = 500;
-  kd = 10;
-  CAN_Handlej.Can_cmd_all(1, kp, kd, pos(0), 0, 0);
-  CAN_Handlej.Can_cmd_all(2, kp, kd, pos(1), 0, 0);
-  CAN_Handlej.Can_cmd_all(4, kp, kd, pos(2), 0, 0);
-  CAN_Handlej.Can_cmd_all(5, kp, kd, pos(3), 0, 0);
-  CAN_Handlej.Can_cmd_all(6, kp, kd, pos(4), 0, 0);
-  CAN_Handlej.Can_cmd_all(7, kp, kd, pos(5), 0, 0);
+  CAN_Handlej.Can_cmd_all(1, 60, 1.2, pos(0), 0, 0);
+  CAN_Handlej.Can_cmd_all(2, 60, 1.2, pos(1), 0, 0);
+  CAN_Handlej.Can_cmd_all(4, 60, 1.2, pos(2), 0, 0);
+  CAN_Handlej.Can_cmd_all(5, 25, 0.8, pos(3), 0, 0);
+  CAN_Handlej.Can_cmd_all(6, 10, 0.8, pos(4), 0, 0);
+  CAN_Handlej.Can_cmd_all(7, 10, 0.8, pos(5), 0, 0);
   ROS_INFO("\033[32m <<<<< Send joints command <<<<<< \033[32m");
 }
 
