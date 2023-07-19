@@ -171,8 +171,10 @@ public:
   float joystick_projection(float joy_axis);
 
   // Get the actual position of joints from CAN controller in real mode
+  void get_curr_pos(Eigen::VectorXd& p, Eigen::VectorXd& v);
   void get_curr_pos();
   void set_joints_pos(const Eigen::VectorXd& pos);
+  void set_joints_torque(const Eigen::VectorXd& torque);
   void set_loop_rate(const unsigned int rate);
   // For startup process
   void init_step();

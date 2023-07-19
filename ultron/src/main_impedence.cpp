@@ -12,9 +12,11 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/Float64MultiArray.h"
 #include "geometry_msgs/Pose.h"
+#include "App/arm_control.h"
 
 /** Dynamic-size vector type. */
 using vector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+bool real_robot = true;
 
 // Define a robot arm joint struct to store joint information
 struct Joint {
@@ -55,7 +57,7 @@ double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
 vector_t x_ref(6);
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
-                           Eigen::Vector3d(0.3, 0.1, 0.3));
+                     Eigen::Vector3d(0.3, 0.1, 0.3));
 bool new_target = true;
 int joint_index = 0;
 
@@ -101,10 +103,10 @@ void poseCallback(const geometry_msgs::Pose::ConstPtr &msg) {
   ROS_INFO("End effector target orientation: [%f,%f,%f]", msg->orientation.x,
            msg->orientation.y, msg->orientation.z, msg->orientation.w);
   new_target = true;
-  
+
   Eigen::Quaterniond q(msg->orientation.w, msg->orientation.x,
                        msg->orientation.y, msg->orientation.z);
-  //quaternion to rotation matrix
+  // quaternion to rotation matrix
   Eigen::Matrix3d R = q.normalized().toRotationMatrix();
   Eigen::Vector3d t(msg->position.x, msg->position.y, msg->position.z);
   oMdes = pinocchio::SE3(R, t);
@@ -115,11 +117,12 @@ int main(int argc, char **argv) {
   // Init ros node
   ros::init(argc, argv, "ultron");
   ros::NodeHandle nh;
+  arx_arm arx_real(0);
   ros::Rate loop_rate(200);
   // Init a joint state topic subscriber
   ros::Subscriber joint_state_sub =
       nh.subscribe("ultron/joint_states", 10, jointStateCallback);
-    // Init a pose topic subscriber
+  // Init a pose topic subscriber
   ros::Subscriber pose_sub = nh.subscribe("ultron/pose", 100, poseCallback);
   // Init joints effort topic publisher
   ros::Publisher joint1_pub = nh.advertise<std_msgs::Float64>(
@@ -151,18 +154,21 @@ int main(int argc, char **argv) {
   const int JOINT_ID = 6;
   x_ref << 0.3, 0.0, 0.3, 0.0, 0.0, 0.0;
   vector_t x(6);
-  Eigen::Matrix<double,6,6> Kp = Eigen::Matrix<double,6,6>::Identity();
+  Eigen::Matrix<double, 6, 6> Kp = Eigen::Matrix<double, 6, 6>::Identity();
   // Set first 3 diagonal elements to 100.0
   Kp.diagonal().head<3>().array() = 50.0;
   // Set last 3 diagonal elements to 20.0
   Kp.diagonal().tail<3>().array() = 10.0;
-  Eigen::Matrix<double,6,6> Kd = Eigen::Matrix<double,6,6>::Identity();
+  Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
   // Set first 3 diagonal elements to 100.0
   Kd.diagonal().head<3>().array() = 5.0;
   // Set last 3 diagonal elements to 20.0
   Kd.diagonal().tail<3>().array() = 2.0;
 
   while (ros::ok()) {
+    if (real_robot) {
+      arx_real.get_curr_pos(q, v);
+    }
     pinocchio::forwardKinematics(model, data, q, v);
     pinocchio::computeJointJacobians(model, data);
     pinocchio::updateFramePlacements(model, data);
@@ -173,11 +179,11 @@ int main(int argc, char **argv) {
     Eigen::Matrix<double, 6, 6> jac;
     pinocchio::getJointJacobian(model, data, JOINT_ID, pinocchio::WORLD, jac);
     // Compute torques
-    x.segment<3>(0) =  data.oMi[JOINT_ID].translation();
+    x.segment<3>(0) = data.oMi[JOINT_ID].translation();
     // data.oMi[JOINT_ID].rotation() to euler angle
     // x.segment<3>(3) = data.oMi[JOINT_ID].rotation().eulerAngles(0,1,2);
     auto rot_measure = data.oMi[JOINT_ID].rotation();
-    auto rot_desired = Eigen::Matrix3d::Identity(); 
+    auto rot_desired = Eigen::Matrix3d::Identity();
     // Compute the error in rotation
     // Eigen::Matrix3d rot_err = rot_desired * rot_measure.transpose();
     Eigen::Matrix3d rot_err = rot_measure * rot_desired.transpose();
@@ -185,27 +191,32 @@ int main(int argc, char **argv) {
     Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
     x.segment<3>(3) = angle;
 
-    Eigen::VectorXd tau = data.nle - jac.transpose()*(Kp*(x-x_ref)+Kd*(jac*v));
+    Eigen::VectorXd tau =
+        data.nle - jac.transpose() * (Kp * (x - x_ref) + Kd * (jac * v));
     // Eigen::VectorXd tau = data.nle;
     // Publish the joints effort
-    std_msgs::Float64 joint1_msg;
-    joint1_msg.data = tau(0);
-    joint1_pub.publish(joint1_msg);
-    std_msgs::Float64 joint2_msg;
-    joint2_msg.data = tau(1);
-    joint2_pub.publish(joint2_msg);
-    std_msgs::Float64 joint3_msg;
-    joint3_msg.data = tau(2);
-    joint3_pub.publish(joint3_msg);
-    std_msgs::Float64 joint4_msg;
-    joint4_msg.data = tau(3);
-    joint4_pub.publish(joint4_msg);
-    std_msgs::Float64 joint5_msg;
-    joint5_msg.data = tau(4);
-    joint5_pub.publish(joint5_msg);
-    std_msgs::Float64 joint6_msg;
-    joint6_msg.data = tau(5);
-    joint6_pub.publish(joint6_msg);
+    if (real_robot) {
+      arx_real.set_joints_torque(tau);
+    } else {
+      std_msgs::Float64 joint1_msg;
+      joint1_msg.data = tau(0);
+      joint1_pub.publish(joint1_msg);
+      std_msgs::Float64 joint2_msg;
+      joint2_msg.data = tau(1);
+      joint2_pub.publish(joint2_msg);
+      std_msgs::Float64 joint3_msg;
+      joint3_msg.data = tau(2);
+      joint3_pub.publish(joint3_msg);
+      std_msgs::Float64 joint4_msg;
+      joint4_msg.data = tau(3);
+      joint4_pub.publish(joint4_msg);
+      std_msgs::Float64 joint5_msg;
+      joint5_msg.data = tau(4);
+      joint5_pub.publish(joint5_msg);
+      std_msgs::Float64 joint6_msg;
+      joint6_msg.data = tau(5);
+      joint6_pub.publish(joint6_msg);
+    }
 
     // Publish the joints acceleration
     std_msgs::Float64MultiArray joint_acceleration_msg;

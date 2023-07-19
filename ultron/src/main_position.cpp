@@ -79,9 +79,9 @@ int main(int argc, char **argv) {
 
   // Main loop
   while (ros::ok()) {
-    if (real_robot == true) {
-      arx_real.get_curr_pos();
-    }
+    // if (real_robot == true) {
+    //   arx_real.get_curr_pos();
+    // }
 
     if (new_target == true) {
       q_last = q;
@@ -140,7 +140,6 @@ int main(int argc, char **argv) {
     }
     // Publish joint topic
     if (joint_index < 200) {
-
       if (real_robot) {
         auto q_cmd = (q - q_last) / 200.0 * joint_index + q_last;
         arx_real.set_joints_pos(q_cmd);
