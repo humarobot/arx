@@ -52,7 +52,7 @@ struct RobotArm {
 
 RobotArm ultron_arm_now, ultron_arm_last;
 // Define update rate
-int update_rate = 200;
+int update_rate = 500;
 double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
 vector_t x_ref(6);
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "ultron");
   ros::NodeHandle nh;
   arx_arm arx_real(0);
-  ros::Rate loop_rate(200);
+  ros::Rate loop_rate(500);
   // Init a joint state topic subscriber
   ros::Subscriber joint_state_sub =
       nh.subscribe("ultron/joint_states", 10, jointStateCallback);
@@ -143,8 +143,7 @@ int main(int argc, char **argv) {
           "ultron/joint_states_acceleration", 10);
 
   using namespace pinocchio;
-  const std::string urdf_filename =
-      "/home/lqk/Ultron-motor/src/ultron/urdf/ultron.urdf";
+  const std::string urdf_filename = URDF_FILE;
   // Load the urdf model
   Model model;
   pinocchio::urdf::buildModel(urdf_filename, model);
@@ -155,15 +154,11 @@ int main(int argc, char **argv) {
   x_ref << 0.3, 0.0, 0.3, 0.0, 0.0, 0.0;
   vector_t x(6);
   Eigen::Matrix<double, 6, 6> Kp = Eigen::Matrix<double, 6, 6>::Identity();
-  // Set first 3 diagonal elements to 100.0
   Kp.diagonal().head<3>().array() = 50.0;
-  // Set last 3 diagonal elements to 20.0
-  Kp.diagonal().tail<3>().array() = 10.0;
+  Kp.diagonal().tail<3>().array() = 5.0;
   Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
-  // Set first 3 diagonal elements to 100.0
-  Kd.diagonal().head<3>().array() = 5.0;
-  // Set last 3 diagonal elements to 20.0
-  Kd.diagonal().tail<3>().array() = 2.0;
+  Kd.diagonal().head<3>().array() = 0.5;
+  Kd.diagonal().tail<3>().array() = 0.1;
 
   while (ros::ok()) {
     if (real_robot) {

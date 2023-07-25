@@ -16,12 +16,15 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
 )
 
+
 add_executable(ultron_position_node src/main_position.cpp)
 target_link_libraries(ultron_position_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}
 )
+target_compile_definitions(ultron_position_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+
 
 add_executable(ultron_impedende_node src/main_impedence.cpp)
 target_link_libraries(ultron_impedende_node
@@ -29,6 +32,7 @@ target_link_libraries(ultron_impedende_node
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}
 )
+target_compile_definitions(ultron_impedende_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
 
 foreach(dir config launch meshes urdf)
 	install(DIRECTORY ${dir}/

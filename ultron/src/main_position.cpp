@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   // Init ros node
   ros::init(argc, argv, "ultron");
   ros::NodeHandle nh;
-  ros::Rate loop_rate(200);
+  ros::Rate loop_rate(500);
   // Init a pose topic subscriber
   ros::Subscriber pose_sub = nh.subscribe("ultron/pose", 100, poseCallback);
   // Init a joint topic publisher
@@ -54,8 +54,8 @@ int main(int argc, char **argv) {
 
   arx_arm arx_real(0);
   using namespace pinocchio;
-  const std::string urdf_filename =
-      "/home/lqk/Ultron-motor/src/ultron/urdf/ultron.urdf";
+  const std::string urdf_filename = URDF_FILE;
+  // std::cout<<URDF_FILE<<std::endl;
   // Load the urdf model
   Model model;
   pinocchio::urdf::buildModel(urdf_filename, model);
@@ -139,9 +139,9 @@ int main(int argc, char **argv) {
       new_target = false;
     }
     // Publish joint topic
-    if (joint_index < 200) {
+    if (joint_index < 500) {
       if (real_robot) {
-        auto q_cmd = (q - q_last) / 200.0 * joint_index + q_last;
+        auto q_cmd = (q - q_last) / 500.0 * joint_index + q_last;
         arx_real.set_joints_pos(q_cmd);
       } else {
         std_msgs::Float64 joint1_msg;
@@ -150,12 +150,12 @@ int main(int argc, char **argv) {
         std_msgs::Float64 joint4_msg;
         std_msgs::Float64 joint5_msg;
         std_msgs::Float64 joint6_msg;
-        joint1_msg.data = (q[0] - q_last[0]) / 200.0 * joint_index + q_last[0];
-        joint2_msg.data = (q[1] - q_last[1]) / 200.0 * joint_index + q_last[1];
-        joint3_msg.data = (q[2] - q_last[2]) / 200.0 * joint_index + q_last[2];
-        joint4_msg.data = (q[3] - q_last[3]) / 200.0 * joint_index + q_last[3];
-        joint5_msg.data = (q[4] - q_last[4]) / 200.0 * joint_index + q_last[4];
-        joint6_msg.data = (q[5] - q_last[5]) / 200.0 * joint_index + q_last[5];
+        joint1_msg.data = (q[0] - q_last[0]) / 500.0 * joint_index + q_last[0];
+        joint2_msg.data = (q[1] - q_last[1]) / 500.0 * joint_index + q_last[1];
+        joint3_msg.data = (q[2] - q_last[2]) / 500.0 * joint_index + q_last[2];
+        joint4_msg.data = (q[3] - q_last[3]) / 500.0 * joint_index + q_last[3];
+        joint5_msg.data = (q[4] - q_last[4]) / 500.0 * joint_index + q_last[4];
+        joint6_msg.data = (q[5] - q_last[5]) / 500.0 * joint_index + q_last[5];
         joint1_pub.publish(joint1_msg);
         joint2_pub.publish(joint2_msg);
         joint3_pub.publish(joint3_msg);
