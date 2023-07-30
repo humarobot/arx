@@ -15,6 +15,7 @@
 #include "App/arm_control.h"
 
 /** Dynamic-size vector type. */
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
 using vector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
 bool real_robot = false;
 
@@ -57,7 +58,7 @@ double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
 vector_t x_ref(6);
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
-                     Eigen::Vector3d(0., 0., 0.));
+                     Eigen::Vector3d(0.3, 0., 0.3));
 bool new_target = true;
 int joint_index = 0;
 
@@ -173,21 +174,11 @@ int main(int argc, char **argv) {
     pinocchio::nonLinearEffects(model, data, q, v);
     Eigen::Matrix<double, 6, 6> jac;
     pinocchio::getJointJacobian(model, data, JOINT_ID, pinocchio::WORLD, jac);
-    // Compute torques
-    x.segment<3>(0) = data.oMi[JOINT_ID].translation();
-    // data.oMi[JOINT_ID].rotation() to euler angle
-    // x.segment<3>(3) = data.oMi[JOINT_ID].rotation().eulerAngles(0,1,2);
-    auto rot_measure = data.oMi[JOINT_ID].rotation();
-    auto rot_desired = Eigen::Matrix3d::Identity();
-    // Compute the error in rotation
-    // Eigen::Matrix3d rot_err = rot_desired * rot_measure.transpose();
-    Eigen::Matrix3d rot_err = rot_measure * rot_desired.transpose();
-    Eigen::AngleAxisd angle_axis(rot_err);
-    Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
-    x.segment<3>(3) = angle;
+    const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
+    Vector6d err = pinocchio::log6(dMi).toVector();
 
     Eigen::VectorXd tau =
-        data.nle - jac.transpose() * (Kp * (x - x_ref) + Kd * (jac * v));
+        data.nle - jac.transpose() * (Kp * err + Kd * (jac * v));
     // Eigen::VectorXd tau = data.nle;
     // Publish the joints effort
     if (real_robot) {
