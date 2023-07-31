@@ -160,12 +160,15 @@ int main(int argc, char **argv) {
   const int JOINT_ID = 6;
   vector_t x(6);
   double index = 0;
+  double period,last_time,now_time,start_time;
+  last_time = ros::Time::now().toSec();
+  start_time = ros::Time::now().toSec();
   Eigen::Matrix<double, 6, 6> Kp = Eigen::Matrix<double, 6, 6>::Identity();
   Kp.diagonal().head<3>().array() = 50.0;
-  Kp.diagonal().tail<3>().array() = 10.0;
+  Kp.diagonal().tail<3>().array() = 5.0;
   Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
-  Kd.diagonal().head<3>().array() = 3.5;
-  Kd.diagonal().tail<3>().array() = 2.3;
+  Kd.diagonal().head<3>().array() = 0.5;
+  Kd.diagonal().tail<3>().array() = 0.1;
 
   while (ros::ok()) {
     if (real_robot) {
@@ -184,7 +187,7 @@ int main(int argc, char **argv) {
     Vector6d err;
     if(new_target){
       // lerp to target
-      double s = index/1000.0;
+      double s = index/500.0;
       Eigen::Vector3d p_start = oMdes_last.translation();
       Eigen::Vector3d p_end = oMdes.translation();
       Eigen::Matrix3d R_start = oMdes_last.rotation();
@@ -205,7 +208,7 @@ int main(int argc, char **argv) {
       err.tail(3) = angle;
 
       index++;
-      if(index==1000){
+      if(index==500){
         index = 0;
         oMdes_last = oMdes;
         new_target = false;
@@ -221,6 +224,12 @@ int main(int argc, char **argv) {
       err.tail(3) = angle;
     }
     
+    now_time = ros::Time::now().toSec();
+    // print now_time
+    // std::cout << "now_time: " << now_time << std::endl;
+    period = now_time - last_time;
+    last_time = now_time;
+    // std::cout << "period: " << period << std::endl;
 
     Eigen::VectorXd tau =
         data.nle - jac.transpose() * (Kp * err + Kd * (jac * v));
