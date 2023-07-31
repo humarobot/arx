@@ -65,7 +65,7 @@
     <child link="link1"/>
     <axis xyz="0 0 1"/>
     <limit effort="25.0" lower="-1.57" upper="1.57" velocity="10.0"/>
-    <dynamics damping="0.1" friction="0.01"/>
+    <dynamics damping="0.8" friction="0.01"/>
   </joint>
   <link name="link2">
     <inertial>
@@ -95,7 +95,7 @@
     <child link="link2"/>
     <axis xyz="0 1 0"/>
     <limit effort="25.0" lower="0." upper="3.14" velocity="10."/>
-    <dynamics damping="0.1" friction="0.01"/>
+    <dynamics damping="0.8" friction="0.01"/>
   </joint>
   <link name="link3">
     <inertial>
@@ -125,7 +125,7 @@
     <child link="link3"/>
     <axis xyz="0 1 0"/>
     <limit effort="25." lower="0." upper="3.14" velocity="10."/>
-    <dynamics damping="0.1" friction="0.01"/>
+    <dynamics damping="0.8" friction="0.01"/>
   </joint>
   <link name="link4">
     <inertial>
@@ -155,6 +155,7 @@
     <child link="link4"/>
     <axis xyz="0 1 0"/>
     <limit effort="15.0" lower="-1.5" upper="1.5" velocity="10."/>
+    <dynamics damping="0.8" friction="0.01"/>
   </joint>
   <link name="link5">
     <inertial>
@@ -184,6 +185,7 @@
     <child link="link5"/>
     <axis xyz="0 0 1"/>
     <limit effort="15.0" lower="-1.5" upper="1.5" velocity="10.0"/>
+    <dynamics damping="0.8" friction="0.01"/>
   </joint>
   <link name="link6">
     <inertial>
@@ -202,9 +204,9 @@
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
+      <!-- <geometry>
         <mesh filename="package://ultron/meshes/link6.STL"/>
-      </geometry>
+      </geometry> -->
     </collision>
   </link>
   <joint name="joint6" type="revolute">
@@ -213,6 +215,7 @@
     <child link="link6"/>
     <axis xyz="1 0 0"/>
     <limit effort="15." lower="-10" upper="10" velocity="10."/>
+    <dynamics damping="0.8" friction="0.01"/>
   </joint>
   <transmission name="joint1_trans">
     <type>transmission_interface/SimpleTransmission</type>

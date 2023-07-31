@@ -34,6 +34,14 @@ target_link_libraries(ultron_impedende_node
 )
 target_compile_definitions(ultron_impedende_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
 
+add_executable(ultron_zero_pos src/zero_pos.cpp)
+target_link_libraries(ultron_zero_pos
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+target_compile_definitions(ultron_zero_pos PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+
 foreach(dir config launch meshes urdf)
 	install(DIRECTORY ${dir}/
 		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})

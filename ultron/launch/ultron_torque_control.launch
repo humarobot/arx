@@ -3,7 +3,7 @@
   <include file="$(find ultron)/launch/gazebo.launch" />
   <param
     name="robot_description"
-    textfile="$(find ultron)/urdf/ultron_torque.urdf" />
+    textfile="$(find ultron)/urdf/ultron.urdf" />
   <!-- Load joint controller configurations from YAML file to parameter server -->
   <rosparam file="$(find ultron)/config/ultron_torque_control.yaml" command="load"/>
 

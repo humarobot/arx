@@ -10,6 +10,11 @@
 #include "Eigen/Core"
 #include "App/arm_control.h"
 
+/**
+* Robot work space
+* face down: x: 0.05~0.4, y: -0.4~0.4, z: -0.2~0.2
+*/
+
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
                      Eigen::Vector3d(0.3, 0.0, 0.3));
 bool new_target = true;

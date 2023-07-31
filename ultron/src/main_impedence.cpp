@@ -7,12 +7,18 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include "pinocchio/multibody/fwd.hpp"
 #include "pinocchio/parsers/urdf.hpp"
+#include "pinocchio/spatial/explog.hpp"
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
 #include "std_msgs/Float64MultiArray.h"
 #include "geometry_msgs/Pose.h"
 #include "App/arm_control.h"
+
+/**
+* Robot work space
+* face down: x: 0.05~0.4, y: -0.4~0.4, z: -0.2~0.2
+*/
 
 /** Dynamic-size vector type. */
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
@@ -56,11 +62,12 @@ RobotArm ultron_arm_now, ultron_arm_last;
 int update_rate = 500;
 double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
-vector_t x_ref(6);
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
-                     Eigen::Vector3d(0.3, 0., 0.3));
-bool new_target = true;
-int joint_index = 0;
+                     Eigen::Vector3d(0.12, 0., 0.16));
+pinocchio::SE3 oMdes_last(Eigen::Matrix3d::Identity(),
+                     Eigen::Vector3d(0.12, 0., 0.16));
+bool new_target = false;
+
 
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {
   // Clear the ultron_arm_now
@@ -111,7 +118,6 @@ void poseCallback(const geometry_msgs::Pose::ConstPtr &msg) {
   Eigen::Matrix3d R = q.normalized().toRotationMatrix();
   Eigen::Vector3d t(msg->position.x, msg->position.y, msg->position.z);
   oMdes = pinocchio::SE3(R, t);
-  x_ref.head<3>() = t;
 }
 
 int main(int argc, char **argv) {
@@ -152,14 +158,14 @@ int main(int argc, char **argv) {
   // Create data required by the algorithms
   Data data(model);
   const int JOINT_ID = 6;
-  x_ref << 0.3, 0.0, 0.3, 0.0, 0.0, 0.0;
   vector_t x(6);
+  double index = 0;
   Eigen::Matrix<double, 6, 6> Kp = Eigen::Matrix<double, 6, 6>::Identity();
   Kp.diagonal().head<3>().array() = 50.0;
   Kp.diagonal().tail<3>().array() = 5.0;
   Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
   Kd.diagonal().head<3>().array() = 0.5;
-  Kd.diagonal().tail<3>().array() = 0.1;
+  Kd.diagonal().tail<3>().array() = 0.3;
 
   while (ros::ok()) {
     if (real_robot) {
@@ -174,8 +180,34 @@ int main(int argc, char **argv) {
     pinocchio::nonLinearEffects(model, data, q, v);
     Eigen::Matrix<double, 6, 6> jac;
     pinocchio::getJointJacobian(model, data, JOINT_ID, pinocchio::WORLD, jac);
-    const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
-    Vector6d err = pinocchio::log6(dMi).toVector();
+    pinocchio::SE3 X_des;
+    Vector6d err;
+    if(new_target){
+      // lerp to target
+      double s = index/1000.0;
+      Eigen::Vector3d p_start = oMdes_last.translation();
+      Eigen::Vector3d p_end = oMdes.translation();
+      Eigen::Matrix3d R_start = oMdes_last.rotation();
+      Eigen::Matrix3d R_end = oMdes.rotation();
+      Eigen::Vector3d p = p_start + s*(p_end - p_start);
+      Eigen::Matrix3d R = R_start * pinocchio::exp3(pinocchio::log3(R_start.transpose()*R_end) * s);
+      X_des = pinocchio::SE3(R,p);
+      
+      // auto se3_err = pinocchio::log6(oMdes.actInv(oMdes_last))*index/5000.0;
+      // X_des = oMdes_last*pinocchio::exp6(se3_err);
+      const pinocchio::SE3 dMi = X_des.actInv(data.oMi[JOINT_ID]);
+      err = pinocchio::log6(dMi).toVector();
+      index++;
+      if(index==1000){
+        index = 0;
+        oMdes_last = oMdes;
+        new_target = false;
+      } 
+    }else{
+      const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
+      err = pinocchio::log6(dMi).toVector();
+    }
+    
 
     Eigen::VectorXd tau =
         data.nle - jac.transpose() * (Kp * err + Kd * (jac * v));
