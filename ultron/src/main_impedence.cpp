@@ -162,10 +162,10 @@ int main(int argc, char **argv) {
   double index = 0;
   Eigen::Matrix<double, 6, 6> Kp = Eigen::Matrix<double, 6, 6>::Identity();
   Kp.diagonal().head<3>().array() = 50.0;
-  Kp.diagonal().tail<3>().array() = 5.0;
+  Kp.diagonal().tail<3>().array() = 10.0;
   Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
-  Kd.diagonal().head<3>().array() = 0.5;
-  Kd.diagonal().tail<3>().array() = 0.3;
+  Kd.diagonal().head<3>().array() = 3.5;
+  Kd.diagonal().tail<3>().array() = 2.3;
 
   while (ros::ok()) {
     if (real_robot) {
@@ -195,8 +195,15 @@ int main(int argc, char **argv) {
       
       // auto se3_err = pinocchio::log6(oMdes.actInv(oMdes_last))*index/5000.0;
       // X_des = oMdes_last*pinocchio::exp6(se3_err);
-      const pinocchio::SE3 dMi = X_des.actInv(data.oMi[JOINT_ID]);
-      err = pinocchio::log6(dMi).toVector();
+      // const pinocchio::SE3 dMi = X_des.actInv(data.oMi[JOINT_ID]);
+      // err = pinocchio::log6(dMi).toVector();
+      auto oMi_measure = data.oMi[JOINT_ID];
+      Eigen::Matrix3d rot_err = oMi_measure.rotation() * X_des.rotation().transpose();
+      Eigen::AngleAxisd angle_axis(rot_err);
+      Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
+      err.head(3) = oMi_measure.translation()-X_des.translation();
+      err.tail(3) = angle;
+
       index++;
       if(index==1000){
         index = 0;
@@ -204,8 +211,14 @@ int main(int argc, char **argv) {
         new_target = false;
       } 
     }else{
-      const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
-      err = pinocchio::log6(dMi).toVector();
+      auto oMi_measure = data.oMi[JOINT_ID];
+      Eigen::Matrix3d rot_err = oMi_measure.rotation() * oMdes.rotation().transpose();
+      Eigen::AngleAxisd angle_axis(rot_err);
+      Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
+      // const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
+      // err = pinocchio::log6(dMi).toVector();
+      err.head(3) = oMi_measure.translation()-oMdes.translation();
+      err.tail(3) = angle;
     }
     
 
