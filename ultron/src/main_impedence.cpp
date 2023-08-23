@@ -63,9 +63,9 @@ int update_rate = 500;
 double update_period = 1.0 / update_rate;
 vector_t q(6), v(6), a(6);
 pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(),
-                     Eigen::Vector3d(0.12, 0., 0.16));
+                     Eigen::Vector3d(0.08, 0., 0.16));
 pinocchio::SE3 oMdes_last(Eigen::Matrix3d::Identity(),
-                     Eigen::Vector3d(0.12, 0., 0.16));
+                     Eigen::Vector3d(0.08, 0., 0.16));
 bool new_target = false;
 
 
@@ -167,8 +167,8 @@ int main(int argc, char **argv) {
   Kp.diagonal().head<3>().array() = 50.0;
   Kp.diagonal().tail<3>().array() = 5.0;
   Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
-  Kd.diagonal().head<3>().array() = 0.5;
-  Kd.diagonal().tail<3>().array() = 0.1;
+  Kd.diagonal().head<3>().array() = 2.5;
+  Kd.diagonal().tail<3>().array() = 1.1;
 
   while (ros::ok()) {
     if (real_robot) {
