@@ -167,8 +167,8 @@ int main(int argc, char **argv) {
   Kp.diagonal().head<3>().array() = 50.0;
   Kp.diagonal().tail<3>().array() = 5.0;
   Eigen::Matrix<double, 6, 6> Kd = Eigen::Matrix<double, 6, 6>::Identity();
-  Kd.diagonal().head<3>().array() = 2.5;
-  Kd.diagonal().tail<3>().array() = 1.1;
+  Kd.diagonal().head<3>().array() = 0.5;
+  Kd.diagonal().tail<3>().array() = 0.1;
 
   while (ros::ok()) {
     if (real_robot) {
