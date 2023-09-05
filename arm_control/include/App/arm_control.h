@@ -174,6 +174,8 @@ public:
   void get_curr_pos(Eigen::VectorXd& p, Eigen::VectorXd& v);
   void get_curr_pos();
   void set_joints_pos(const Eigen::VectorXd& pos);
+  void set_tail_3_pos(const Eigen::VectorXd& pos);
+  void set_head_3_torque(const Eigen::VectorXd& torque);
   void set_joints_torque(const Eigen::VectorXd& torque);
   void set_loop_rate(const unsigned int rate);
   // For startup process
