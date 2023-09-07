@@ -7,6 +7,8 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   Demonstrator demonstrator(nh,500,"test.bag");
   // demonstrator.StartUp();
-  demonstrator.Record();
+  // demonstrator.Record();
+  demonstrator.Replay();
+  
   return 0;
 }

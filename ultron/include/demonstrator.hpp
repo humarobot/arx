@@ -1,6 +1,7 @@
 #include "App/arm_control.h"
 #include "ros/ros.h"
 #include <rosbag/bag.h>
+#include <rosbag/view.h>
 #include <std_msgs/Float64MultiArray.h>
 
 

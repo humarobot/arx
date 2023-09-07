@@ -74,3 +74,28 @@ void Demonstrator::Record() {
   std::cout << "Record finished!" << std::endl;
 
 }
+
+void Demonstrator::Replay() {
+  int sleep_time = 1000000 / hz_;
+  bag_.open(bag_name_,rosbag::bagmode::Read);
+  rosbag::View view(bag_, rosbag::TopicQuery("joints_position"));
+  // Iterate over the messages in the view
+  for (const rosbag::MessageInstance& msg : view) {
+    // Check if the message is of type std_msgs/Float64MultiArray
+    if (msg.getDataType() == "std_msgs/Float64MultiArray") {
+      // Convert the message to a std_msgs::Float64MultiArray
+      std_msgs::Float64MultiArray::ConstPtr array_msg = msg.instantiate<std_msgs::Float64MultiArray>();
+      if (array_msg != nullptr) {
+        // Process the array message here
+        Eigen::VectorXd pos(6);
+        for(int i=0;i<6;i++){
+          pos(i) = array_msg->data[i];
+        }
+        // Print pos
+        std::cout << "pos = " << pos.transpose() << std::endl;
+        robotic_arm_->set_joints_pos(pos);
+        std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
+      }
+    }
+  }
+}
