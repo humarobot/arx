@@ -16,6 +16,7 @@
 #include "App/arm_control.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include "geometry_msgs/Wrench.h"
 
 
 /**
@@ -26,7 +27,7 @@
 /** Dynamic-size vector type. */
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 using vector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-bool real_robot = false;
+bool real_robot = true;
 
 // Define a robot arm joint struct to store joint information
 struct Joint {
@@ -147,6 +148,8 @@ int main(int argc, char **argv) {
       "/ultron/joint5_torque_controller/command", 1);
   ros::Publisher joint6_pub = nh.advertise<std_msgs::Float64>(
       "/ultron/joint6_torque_controller/command", 1);
+  ros::Publisher ext_wrench_pub = nh.advertise<geometry_msgs::Wrench>("/baseWrench",1);
+  ros::Publisher ee_pos_pub = nh.advertise<geometry_msgs::Vector3>("/eePositionError",1);
   // // Init a joints acceleration topic publisher
   // ros::Publisher joint_acceleration_pub =
   //     nh.advertise<std_msgs::Float64MultiArray>(
@@ -172,10 +175,10 @@ int main(int argc, char **argv) {
   last_time = ros::Time::now().toSec();
   start_time = ros::Time::now().toSec();
   Eigen::Matrix<double, 3, 3> Kp = Eigen::Matrix<double, 3, 3>::Identity();
-  Kp.diagonal().head<3>().array() = 50.0;
+  Kp.diagonal().head<3>().array() = 250.0;
   // Kp.diagonal().tail<3>().array() = 0.0;
   Eigen::Matrix<double, 3, 3> Kd = Eigen::Matrix<double, 3, 3>::Identity();
-  Kd.diagonal().head<3>().array() = 5.;
+  Kd.diagonal().head<3>().array() = 8.;
   // Kd.diagonal().tail<3>().array() = 0.0;
 
   while (ros::ok()) {
@@ -207,7 +210,7 @@ int main(int argc, char **argv) {
       Eigen::Matrix3d R = R_start * pinocchio::exp3(pinocchio::log3(R_start.transpose()*R_end) * s);
       X_des = pinocchio::SE3(R,p);
       
-      rot_err = oMi_measure.rotation() * X_des.rotation().transpose();
+      rot_err = oMi_measure.rotation().transpose() * X_des.rotation();
       Eigen::AngleAxisd angle_axis(rot_err);
       Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
       err.head(3) = oMi_measure.translation()-X_des.translation();
@@ -220,12 +223,18 @@ int main(int argc, char **argv) {
         new_target = false;
       } 
     }else{
-      rot_err = oMi_measure.rotation() * oMdes.rotation().transpose();
+      rot_err = oMi_measure.rotation().transpose() * oMdes.rotation();
       Eigen::AngleAxisd angle_axis(rot_err);
       Eigen::Vector3d angle = angle_axis.angle() * angle_axis.axis();
       // const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
       // err = pinocchio::log6(dMi).toVector();
       err.head(3) = oMi_measure.translation()-oMdes.translation();
+      // if(oMi_measure.translation()(0)<0.25){
+      //   err(0) = -0.03;
+      // }else{
+      //   err(0) = 0.0;
+      // }
+      
       err.tail(3) = angle;
     }
 
@@ -245,24 +254,43 @@ int main(int argc, char **argv) {
     // std::cout<<"err: "<<err<<std::endl;
 
     Eigen::VectorXd tau(6);
-    tau.head(3) = data.nle - j_v.transpose() * (Kp * err.head(3) + Kd * (j_v * v.head(3)));
+    Eigen::Vector3d ext_force,ext_torque;
+    ext_force = Kp * err.head(3) + Kd * (j_v * v.head(3));
+    tau.head(3) = data.nle - j_v.transpose() * (ext_force);
+    geometry_msgs::Wrench wrench_msg;
+    wrench_msg.force.x = ext_force(0);
+    wrench_msg.force.y = ext_force(1);
+    wrench_msg.force.z = ext_force(2);
+    ext_torque = - ext_force.cross(oMi_measure.translation());
+    wrench_msg.torque.x = ext_torque(0);
+    wrench_msg.torque.y = ext_torque(1);
+    wrench_msg.torque.z = ext_torque(2);
+    // ext_wrench_pub.publish(wrench_msg);
+
+    geometry_msgs::Vector3 ee_pos_msg;
+    ee_pos_msg.x = err(0);
+    ee_pos_msg.y = err(1);
+    ee_pos_msg.z = err(2);
+    ee_pos_pub.publish(ee_pos_msg);
+
     Eigen::Matrix3d r = rot_err;
     Eigen::Vector3d target_angles;
     target_angles[0] = atan2(-r(2,0),r(0,0));
     target_angles[1] = atan2(r(1,0),sqrt(r(1,1)*r(1,1)+r(1,2)*r(1,2)));
     target_angles[2] = atan2(-r(1,2),r(1,1));
-    //print target_angles
-    std::cout<<"target_angles: "<<target_angles.transpose()<<std::endl;
+    // //print target_angles
+    // std::cout<<"target_angles: "<<target_angles.transpose()<<std::endl;
     // target_angles<<0.9,0.0,0.0;
     Eigen::Vector3d target_angles_head;
-    target_angles_head<<0.7,0.9,0.8;
-    // tau.head(3) = -120.0*(q.head(3)-target_angles_head) - 5.*v.head(3);
-    tau.head(3)<<0.0,0.0,0.0;
-    tau.tail(3) = -10.0*(q.tail(3)-target_angles) - 0.5*v.tail(3);
+    target_angles_head<<0.,0.,0.;
 
+    tau.tail(3)<<0.0,0.0,0.0;
     // Publish the joints effort
     if (real_robot) {
-      arx_real.set_joints_torque(tau);
+      // arx_real.set_joints_torque(tau);
+      arx_real.set_head_3_torque(tau.head(3));
+      arx_real.set_tail_3_pos(-target_angles);
+      // arx_real.set_tail_3_pos(target_angles_head);
     } else {
       std_msgs::Float64 joint1_msg;
       joint1_msg.data = tau(0);

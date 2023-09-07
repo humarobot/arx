@@ -102,6 +102,12 @@ void arx_arm::set_joints_pos(const Eigen::VectorXd& pos) {
   CAN_Handlej.Can_cmd_all(7, 10, 0.8, pos(5), 0, 0);
   ROS_INFO("\033[32m <<<<< Send joints position command <<<<<< \033[32m");
 }
+void arx_arm::set_tail_3_pos(const Eigen::VectorXd& pos) {
+  assert(pos.size() == 3);
+  CAN_Handlej.Can_cmd_all(5, 25, 0.8, pos(0), 0, 0);
+  CAN_Handlej.Can_cmd_all(6, 10, 0.8, pos(1), 0, 0);
+  CAN_Handlej.Can_cmd_all(7, 10, 0.8, pos(2), 0, 0);
+}
 
 void arx_arm::set_joints_torque(const Eigen::VectorXd& torque){
   assert(torque.size() == 6);
@@ -112,6 +118,13 @@ void arx_arm::set_joints_torque(const Eigen::VectorXd& torque){
   CAN_Handlej.Can_cmd_all(6, 0, 0, 0, 0, torque(4));
   CAN_Handlej.Can_cmd_all(7, 0, 0, 0, 0, torque(5));
   ROS_INFO("\033[32m <<<<< Send joints torque command <<<<<< \033[32m");  
+}
+
+void arx_arm::set_head_3_torque(const Eigen::VectorXd& torque){
+  assert(torque.size() == 3);
+  CAN_Handlej.Can_cmd_all(1, 0, 0, 0, 0, torque(0));
+  CAN_Handlej.Can_cmd_all(2, 0, 0, 0, 0, torque(1));
+  CAN_Handlej.Can_cmd_all(4, 0, 0, 0, 0, torque(2));
 }
 
 void arx_arm::update_real() {
