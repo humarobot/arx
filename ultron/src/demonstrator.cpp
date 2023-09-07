@@ -5,6 +5,7 @@
 
 Demonstrator::Demonstrator(ros::NodeHandle& nh):nh_(nh)
 {
+  robotic_arm_ = std::make_shared<arx_arm>(0);
   tau_w_.setZero();
 }
 
@@ -24,7 +25,7 @@ void Demonstrator::StartUp(int hz)
       std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
     } else{
       // Print warning
-
+      std::cout<<"Warning: the control loop is slower than the desired frequency!"<<std::endl;
     }
   }
 

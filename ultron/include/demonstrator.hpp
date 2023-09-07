@@ -15,7 +15,7 @@ public:
   void Stop();
 
 private:
-  std::shared_ptr<arx_arm> robotic_arm_{0};
+  std::shared_ptr<arx_arm> robotic_arm_;
   ros::NodeHandle& nh_;
   Eigen::VectorXd tau_w_{6},q_r_{6},v_r_{6};
 
