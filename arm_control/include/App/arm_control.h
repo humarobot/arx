@@ -53,10 +53,6 @@
 #define ROLL 5
 #define GRASP 6
 
-#define X 0
-#define Y 1
-#define Z 2
-
 // Number of joints
 #define NJ 6
 

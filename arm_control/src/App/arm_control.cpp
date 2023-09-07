@@ -45,13 +45,13 @@ void arx_arm::get_curr_pos(Eigen::VectorXd& p, Eigen::VectorXd& v) {
   v << current_vel[0], current_vel[1], current_vel[2], current_vel[3],
       current_vel[4], current_vel[5];
 
-  ROS_INFO("\033[34m >>>>>>>>>> pos >>>>>>>>>> \033[34m"); //
-  ROS_INFO("\033[34m pos = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
-           current_pos[0], current_pos[1], current_pos[2], current_pos[3],
-           current_pos[4], current_pos[5], current_pos[6]);
-  ROS_INFO("\033[34m vel = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
-           current_vel[0], current_vel[1], current_vel[2], current_vel[3],
-           current_vel[4], current_vel[5], current_vel[6]);
+  // ROS_INFO("\033[34m >>>>>>>>>> pos >>>>>>>>>> \033[34m"); //
+  // ROS_INFO("\033[34m pos = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
+  //          current_pos[0], current_pos[1], current_pos[2], current_pos[3],
+  //          current_pos[4], current_pos[5], current_pos[6]);
+  // ROS_INFO("\033[34m vel = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
+  //          current_vel[0], current_vel[1], current_vel[2], current_vel[3],
+  //          current_vel[4], current_vel[5], current_vel[6]);
 }
 void arx_arm::get_curr_pos() {
   // ！！！ ID 3 电机为另一版本型号并联的第二个关节，在此不使用
@@ -83,13 +83,13 @@ void arx_arm::get_curr_pos() {
   current_vel[4] = rv_motor_msg[5].speed_actual_rad;
   current_vel[5] = rv_motor_msg[6].speed_actual_rad;
 
-  ROS_INFO("\033[34m >>>>>>>>>> pos >>>>>>>>>> \033[34m"); //
-  ROS_INFO("\033[34m pos = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
-           current_pos[0], current_pos[1], current_pos[2], current_pos[3],
-           current_pos[4], current_pos[5], current_pos[6]);
-  ROS_INFO("\033[34m vel = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
-           current_vel[0], current_vel[1], current_vel[2], current_vel[3],
-           current_vel[4], current_vel[5], current_vel[6]);
+  // ROS_INFO("\033[34m >>>>>>>>>> pos >>>>>>>>>> \033[34m"); //
+  // ROS_INFO("\033[34m pos = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
+  //          current_pos[0], current_pos[1], current_pos[2], current_pos[3],
+  //          current_pos[4], current_pos[5], current_pos[6]);
+  // ROS_INFO("\033[34m vel = 1>%f 2>%f 3>%f 4>%f 5>%f 6>%f 7>%f \033[34m",
+  //          current_vel[0], current_vel[1], current_vel[2], current_vel[3],
+  //          current_vel[4], current_vel[5], current_vel[6]);
 }
 
 void arx_arm::set_joints_pos(const Eigen::VectorXd& pos) {
@@ -100,7 +100,7 @@ void arx_arm::set_joints_pos(const Eigen::VectorXd& pos) {
   CAN_Handlej.Can_cmd_all(5, 25, 0.8, pos(3), 0, 0);
   CAN_Handlej.Can_cmd_all(6, 10, 0.8, pos(4), 0, 0);
   CAN_Handlej.Can_cmd_all(7, 10, 0.8, pos(5), 0, 0);
-  ROS_INFO("\033[32m <<<<< Send joints position command <<<<<< \033[32m");
+  // ROS_INFO("\033[32m <<<<< Send joints position command <<<<<< \033[32m");
 }
 void arx_arm::set_tail_3_pos(const Eigen::VectorXd& pos) {
   assert(pos.size() == 3);
