@@ -39,7 +39,7 @@ void Demonstrator::StartUp() {
 void Demonstrator::Record() {
   double t = 0.0;
   bag_.open(bag_name_, rosbag::bagmode::Write);
-  while(ros::ok() && t<3.0){
+  while(ros::ok() && t<30.0){
     auto start = std::chrono::high_resolution_clock::now();
     //*************** Working code ***************************
     robotic_arm_->set_joints_torque(tau_w_);
@@ -82,7 +82,7 @@ void Demonstrator::Replay() {
   // Iterate over the messages in the view
   for (const rosbag::MessageInstance& msg : view) {
     // Check if the message is of type std_msgs/Float64MultiArray
-    if (msg.getDataType() == "std_msgs/Float64MultiArray") {
+    if (msg.getDataType() == "std_msgs/Float64MultiArray" && ros::ok()) {
       // Convert the message to a std_msgs::Float64MultiArray
       std_msgs::Float64MultiArray::ConstPtr array_msg = msg.instantiate<std_msgs::Float64MultiArray>();
       if (array_msg != nullptr) {

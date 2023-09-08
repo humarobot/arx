@@ -1,0 +1,10 @@
+<launch>
+
+  <!-- load the controllers -->
+  <node name="hand_controller" pkg="ultron" type="hand_controller" respawn="false" output="screen"/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <!-- <node name="demonstrate_mode" pkg="ultron" type="demonstrate_mode" respawn="false" output="screen">
+  </node> -->
+
+</launch>

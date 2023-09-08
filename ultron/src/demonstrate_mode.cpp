@@ -8,7 +8,7 @@ int main(int argc, char** argv)
   Demonstrator demonstrator(nh,500,"test.bag");
   // demonstrator.StartUp();
   // demonstrator.Record();
-  demonstrator.Replay();
+  demonstrator.Replay(); 
   
   return 0;
 }

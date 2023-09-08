@@ -133,10 +133,10 @@ int main(int argc, char **argv) {
   std::string serial_port_;
   int baudrate_;
 
-  n.param<std::string>("serial_port", serial_port_, "/dev/ttyUSB0");
+  n.param<std::string>("serial_port", serial_port_, "/dev/handusb");
   n.param<int>("baudrate", baudrate_, 9600);
 
-  ros::Rate loop(4);
+  ros::Rate loop(20);
 
   try {
     ser.setPort(serial_port_);

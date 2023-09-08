@@ -102,6 +102,18 @@ void arx_arm::set_joints_pos(const Eigen::VectorXd& pos) {
   CAN_Handlej.Can_cmd_all(7, 10, 0.8, pos(5), 0, 0);
   // ROS_INFO("\033[32m <<<<< Send joints position command <<<<<< \033[32m");
 }
+void arx_arm::set_joints_pos_vel(const Eigen::VectorXd& pos,const Eigen::VectorXd& vel) {
+  assert(pos.size() == 6);
+  assert(vel.size() == 6);
+  CAN_Handlej.Can_cmd_all(1, 60, 1.2, pos(0), vel(0), 0);
+  CAN_Handlej.Can_cmd_all(2, 60, 1.2, pos(1), vel(1), 0);
+  CAN_Handlej.Can_cmd_all(4, 60, 1.2, pos(2), vel(2), 0);
+  CAN_Handlej.Can_cmd_all(5, 25, 0.8, pos(3), vel(3), 0);
+  CAN_Handlej.Can_cmd_all(6, 10, 0.8, pos(4), vel(4), 0);
+  CAN_Handlej.Can_cmd_all(7, 10, 0.8, pos(5), vel(5), 0);
+  // ROS_INFO("\033[32m <<<<< Send joints position command <<<<<< \033[32m");
+}
+
 void arx_arm::set_tail_3_pos(const Eigen::VectorXd& pos) {
   assert(pos.size() == 3);
   CAN_Handlej.Can_cmd_all(5, 25, 0.8, pos(0), 0, 0);
