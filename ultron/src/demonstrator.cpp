@@ -39,16 +39,16 @@ void Demonstrator::StartUp() {
 void Demonstrator::Record() {
   double t = 0.0;
   bag_.open(bag_name_, rosbag::bagmode::Write);
-  while(ros::ok() && t<30.0){
+  while (ros::ok() && t < 30.0) {
     auto start = std::chrono::high_resolution_clock::now();
     //*************** Working code ***************************
     robotic_arm_->set_joints_torque(tau_w_);
     robotic_arm_->get_curr_pos(q_r_, v_r_);
     auto timestamp = ::ros::Time(t + 1e-6); // t=0.0 throws ROS exception
-    std_msgs::Float64MultiArray q_msg,v_msg;
+    std_msgs::Float64MultiArray q_msg, v_msg;
     q_msg.data.resize(6);
     v_msg.data.resize(6);
-    for(int i=0;i<6;i++){
+    for (int i = 0; i < 6; i++) {
       q_msg.data[i] = q_r_(i);
       v_msg.data[i] = v_r_(i);
     }
@@ -72,30 +72,42 @@ void Demonstrator::Record() {
   }
   bag_.close();
   std::cout << "Record finished!" << std::endl;
-
 }
 
 void Demonstrator::Replay() {
   int sleep_time = 1000000 / hz_;
-  bag_.open(bag_name_,rosbag::bagmode::Read);
-  rosbag::View view(bag_, rosbag::TopicQuery("joints_position"));
-  // Iterate over the messages in the view
-  for (const rosbag::MessageInstance& msg : view) {
-    // Check if the message is of type std_msgs/Float64MultiArray
-    if (msg.getDataType() == "std_msgs/Float64MultiArray" && ros::ok()) {
-      // Convert the message to a std_msgs::Float64MultiArray
-      std_msgs::Float64MultiArray::ConstPtr array_msg = msg.instantiate<std_msgs::Float64MultiArray>();
-      if (array_msg != nullptr) {
-        // Process the array message here
-        Eigen::VectorXd pos(6);
-        for(int i=0;i<6;i++){
-          pos(i) = array_msg->data[i];
-        }
-        // Print pos
-        std::cout << "pos = " << pos.transpose() << std::endl;
-        robotic_arm_->set_joints_pos(pos);
-        std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
-      }
+  bag_.open(bag_name_, rosbag::bagmode::Read);
+  rosbag::View view_pos(bag_, rosbag::TopicQuery("joints_position"));
+  rosbag::View view_vel(bag_, rosbag::TopicQuery("joints_velocity"));
+
+  rosbag::View::iterator it_pos = view_pos.begin();
+  rosbag::View::iterator it_vel = view_vel.begin();
+  //skip first 10 data
+  for(int i=0;i<10;i++){
+    ++it_pos;
+    ++it_vel;
+  }
+
+  while (it_pos != view_pos.end() && it_vel != view_vel.end() && ros::ok()) {
+    const rosbag::MessageInstance &ins_pos = *it_pos;
+    const rosbag::MessageInstance &ins_vel = *it_vel;
+    std_msgs::Float64MultiArray::ConstPtr msg_pos =
+        ins_pos.instantiate<std_msgs::Float64MultiArray>();
+    std_msgs::Float64MultiArray::ConstPtr msg_vel =
+        ins_vel.instantiate<std_msgs::Float64MultiArray>();
+
+    // Do something with the messages...
+    Eigen::VectorXd pos(6),vel(6);
+    for (int i = 0; i < 6; i++) {
+      pos(i) = msg_pos->data[i];
+      vel(i) = msg_vel->data[i];
     }
+    // Print pos,vel
+    std::cout << "pos = " << pos.transpose() << std::endl;
+    std::cout << "vel = " << vel.transpose() << std::endl;
+    robotic_arm_->set_joints_pos_vel(pos,vel);
+    std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
+    ++it_pos;
+    ++it_vel;
   }
 }
