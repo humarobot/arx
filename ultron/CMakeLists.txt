@@ -3,7 +3,13 @@ project(ultron)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp std_msgs sensor_msgs rosbag arm_control)
+  roscpp 
+  std_msgs 
+  sensor_msgs 
+  rosbag 
+  arm_control
+  serial
+  )
 find_package(pinocchio)
 find_package(Eigen3)
 
@@ -69,6 +75,14 @@ target_link_libraries(demonstrate_mode
 )
 target_compile_definitions(demonstrate_mode PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron3.urdf")
 
+add_executable(hand_controller
+src/hand_controller.cpp)
+
+target_link_libraries(hand_controller
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
 
 foreach(dir config launch meshes urdf)
 	install(DIRECTORY ${dir}/
