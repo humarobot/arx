@@ -24,7 +24,7 @@ void Demonstrator::StartUp() {
 void Demonstrator::Record() {
   double t = 0.0;
   bag_.open(bag_name_, rosbag::bagmode::Write);
-  while (ros::ok() && t < 30.0) {
+  while (ros::ok() && record_on_) {
     auto start = std::chrono::high_resolution_clock::now();
     //*************** Working code ***************************
     robotic_arm_->set_joints_torque(tau_w_);
@@ -106,7 +106,12 @@ void Demonstrator::ReplayImpedence(){
   robotic_arm_->set_joints_torque(tau_zero);
 
   int sleep_time = 1000000 / hz_;
-  bag_.open(bag_name_, rosbag::bagmode::Read);
+  try {
+    bag_.open(bag_name_, rosbag::bagmode::Read);
+  } catch (const rosbag::BagIOException &e) {
+    std::cout << "Error: " << e.what() << std::endl;
+    return;
+  }
   rosbag::View view_pos(bag_, rosbag::TopicQuery("joints_position"));
   rosbag::View view_vel(bag_, rosbag::TopicQuery("joints_velocity"));
 

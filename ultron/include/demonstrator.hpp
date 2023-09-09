@@ -27,6 +27,13 @@ public:
   void Pause();
   void Stop();
 
+  void SetRecording(bool record_on){
+    record_on_ = record_on;
+  }
+  bool GetRecording(){
+    return record_on_;
+  }
+
 private:
   std::shared_ptr<arx_arm> robotic_arm_;
   ros::NodeHandle& nh_;
@@ -37,5 +44,7 @@ private:
   pinocchio::Model model_;
   pinocchio::Data data_;
   int link_id_;
+
+  bool record_on_{false};
 
 };
