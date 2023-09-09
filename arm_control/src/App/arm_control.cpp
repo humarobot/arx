@@ -130,7 +130,7 @@ void arx_arm::set_joints_torque(const Eigen::VectorXd& torque){
   CAN_Handlej.Can_cmd_all(5, 0, 0, 0, 0, torque(3));
   CAN_Handlej.Can_cmd_all(6, 0, 0, 0, 0, torque(4));
   CAN_Handlej.Can_cmd_all(7, 0, 0, 0, 0, torque(5));
-  ROS_INFO("\033[32m <<<<< Send joints torque command <<<<<< \033[32m");  
+  // ROS_INFO("\033[32m <<<<< Send joints torque command <<<<<< \033[32m");  
 }
 
 void arx_arm::set_head_3_torque(const Eigen::VectorXd& torque){

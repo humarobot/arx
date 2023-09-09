@@ -3,9 +3,9 @@
 #include <iostream>
 #include <thread>
 
-Demonstrator::Demonstrator(ros::NodeHandle &nh, int hz,
+Demonstrator::Demonstrator(int hz,
                            const std::string &bag_name)
-    : nh_(nh), hz_(hz), bag_name_(bag_name) {
+    : hz_(hz), bag_name_(bag_name) {
   robotic_arm_ = std::make_shared<arx_arm>(0);
   tau_w_.setZero();
   q_r_.setZero();
@@ -39,6 +39,7 @@ void Demonstrator::Record() {
     }
     bag_.write("joints_position", timestamp, q_msg);
     bag_.write("joints_velocity", timestamp, v_msg);
+    ros::spinOnce();
     //*******************************************************
     auto end = std::chrono::high_resolution_clock::now();
     auto duration =
@@ -95,6 +96,8 @@ void Demonstrator::Replay() {
     ++it_pos;
     ++it_vel;
   }
+  bag_.close();
+  std::cout << "Replay finished!" << std::endl;
 }
 
 void Demonstrator::ReplayImpedence(){
@@ -184,6 +187,35 @@ void Demonstrator::ReplayImpedence(){
     std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
     ++it_pos;
     ++it_vel;
+  }
+  bag_.close();
+  command = StopReplay;
+  std::cout << "Replay finished!" << std::endl;
+}
+
+void Demonstrator::Callback(const std_msgs::Int32::ConstPtr &msg){
+  // print
+  std::cout<<"enter callback"<<std::endl;
+  switch (msg->data){
+    case 0:
+      command = Idle;
+      break;
+    case 1:
+      command = StartRecord;
+      SetRecording(true);
+      break;
+    case 2:
+      command = StopRecord;
+      SetRecording(false);
+      break;
+    case 3:
+      command = StartReplay;
+      break;
+    case 4:
+      command = StopReplay;
+      break;
+    default:
+      break;
   }
 
 }
