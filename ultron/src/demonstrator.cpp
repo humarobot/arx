@@ -146,6 +146,7 @@ void Demonstrator::ReplayImpedence(){
     pinocchio::forwardKinematics(model_,data_d_,pos.head(3),vel.head(3));
     pinocchio::computeJointJacobians(model_, data_);
     pinocchio::updateFramePlacements(model_, data_);
+    pinocchio::updateFramePlacements(model_, data_d_);
     pinocchio::crba(model_, data_, q.head(3));
     data_.M.triangularView<Eigen::StrictlyLower>() =
         data_.M.transpose().triangularView<Eigen::StrictlyLower>();
@@ -171,7 +172,8 @@ void Demonstrator::ReplayImpedence(){
     ext_force = Kp * err.head(3) + Kd * (j_v * v.head(3));
     tau.head(3) = data_.nle - j_v.transpose() * (ext_force);
     tau.tail(3)<<0.0,0.0,0.0;
-    robotic_arm_->set_head_3_torque(tau.head(3));
+    // robotic_arm_->set_head_3_torque(tau.head(3));
+    robotic_arm_->set_head_3_pos_torque(pos.head(3),tau.head(3));
     robotic_arm_->set_tail_3_pos(pos.tail(3));
 
     std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));

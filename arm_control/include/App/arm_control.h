@@ -175,6 +175,7 @@ public:
   void set_head_3_torque(const Eigen::VectorXd& torque);
   void set_joints_torque(const Eigen::VectorXd& torque);
   void set_loop_rate(const unsigned int rate);
+  void set_head_3_pos_torque(const Eigen::VectorXd& pos,const Eigen::VectorXd& torque);
   // For startup process
   void init_step();
   bool is_starting = true;
