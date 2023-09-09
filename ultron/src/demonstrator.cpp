@@ -194,24 +194,26 @@ void Demonstrator::ReplayImpedence(){
 }
 
 void Demonstrator::Callback(const std_msgs::Int32::ConstPtr &msg){
-  // print
-  std::cout<<"enter callback"<<std::endl;
   switch (msg->data){
     case 0:
       command = Idle;
       break;
     case 1:
+      std::cout<<"Start Recording!!!"<<std::endl;
       command = StartRecord;
       SetRecording(true);
       break;
     case 2:
+      std::cout<<"Stop Recording!!!"<<std::endl;
       command = StopRecord;
       SetRecording(false);
       break;
     case 3:
+      std::cout<<"Start Replaying!!!"<<std::endl;
       command = StartReplay;
       break;
     case 4:
+      std::cout<<"Stop Replaying!!!"<<std::endl;
       command = StopReplay;
       break;
     default:
