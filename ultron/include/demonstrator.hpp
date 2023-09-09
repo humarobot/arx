@@ -1,3 +1,12 @@
+#include "pinocchio/algorithm/crba.hpp"
+#include "pinocchio/algorithm/frames.hpp"
+#include "pinocchio/algorithm/jacobian.hpp"
+#include "pinocchio/algorithm/joint-configuration.hpp"
+#include "pinocchio/algorithm/kinematics.hpp"
+#include "pinocchio/algorithm/rnea.hpp"
+#include "pinocchio/multibody/fwd.hpp"
+#include "pinocchio/parsers/urdf.hpp"
+#include "pinocchio/spatial/explog.hpp"
 #include "App/arm_control.h"
 #include "ros/ros.h"
 #include <rosbag/bag.h>
@@ -14,6 +23,7 @@ public:
   void StartUp();
   void Record();
   void Replay();
+  void ReplayImpedence();
   void Pause();
   void Stop();
 
@@ -24,5 +34,8 @@ private:
   int hz_;
   rosbag::Bag bag_;
   const std::string bag_name_;
+  pinocchio::Model model_;
+  pinocchio::Data data_;
+  int link_id_;
 
 };
