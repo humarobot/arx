@@ -24,7 +24,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/base_link.STL"/>
+        <mesh filename="package://ultron_test/meshes/base_link.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -33,7 +33,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/base_link.STL"/>
+        <mesh filename="package://ultron_test/meshes/base_link.STL"/>
       </geometry>
     </collision>
   </link>
@@ -46,7 +46,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link1.STL"/>
+        <mesh filename="package://ultron_test/meshes/link1.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -55,7 +55,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link1.STL"/>
+        <mesh filename="package://ultron_test/meshes/link1.STL"/>
       </geometry>
     </collision>
   </link>
@@ -76,7 +76,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link2.STL"/>
+        <mesh filename="package://ultron_test/meshes/link2.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -85,7 +85,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link2.STL"/>
+        <mesh filename="package://ultron_test/meshes/link2.STL"/>
       </geometry>
     </collision>
   </link>
@@ -106,7 +106,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link3.STL"/>
+        <mesh filename="package://ultron_test/meshes/link3.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -115,7 +115,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link3.STL"/>
+        <mesh filename="package://ultron_test/meshes/link3.STL"/>
       </geometry>
     </collision>
   </link>
@@ -136,7 +136,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link4.STL"/>
+        <mesh filename="package://ultron_test/meshes/link4.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.89804 0.91765 0.92941 1"/>
@@ -145,7 +145,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link4.STL"/>
+        <mesh filename="package://ultron_test/meshes/link4.STL"/>
       </geometry>
     </collision>
   </link>
@@ -166,7 +166,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link5.STL"/>
+        <mesh filename="package://ultron_test/meshes/link5.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.75294 0.75294 0.75294 1"/>
@@ -175,7 +175,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link5.STL"/>
+        <mesh filename="package://ultron_test/meshes/link5.STL"/>
       </geometry>
     </collision>
   </link>
@@ -196,7 +196,7 @@ Stephen Brawner (brawner@gmail.com)
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link6.STL"/>
+        <mesh filename="package://ultron_test/meshes/link6.STL"/>
       </geometry>
       <material name="">
         <color rgba="0.89804 0.91765 0.92941 1"/>
@@ -205,7 +205,7 @@ Stephen Brawner (brawner@gmail.com)
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://ultron/meshes/link6.STL"/>
+        <mesh filename="package://ultron_test/meshes/link6.STL"/>
       </geometry>
     </collision>
   </link>

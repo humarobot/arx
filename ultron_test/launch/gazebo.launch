@@ -10,7 +10,7 @@
     name="spawn_model"
     pkg="gazebo_ros"
     type="spawn_model"
-    args="-file $(find ultron)/urdf/ultron.urdf -urdf -model ultron"
+    args="-file $(find ultron_test)/urdf/ultron.urdf -urdf -model ultron"
     output="screen" />
   <node
     name="fake_joint_calibration"
