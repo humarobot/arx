@@ -1,0 +1,21 @@
+<launch>
+
+  <include file="$(find ultron_pos)/launch/gazebo.launch" />
+  <param
+    name="robot_description"
+    textfile="$(find ultron_pos)/urdf/ultron.urdf" />
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find ultron_pos)/config/ultron_torque_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/ultron" args="joint1_torque_controller joint2_torque_controller
+     joint3_torque_controller joint4_torque_controller joint5_torque_controller joint6_torque_controller joint_state_controller"/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" output="screen">
+    <remap from="/joint_states" to="/ultron/joint_states" />
+  </node>
+
+</launch>
