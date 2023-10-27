@@ -34,7 +34,7 @@ bool InverseKinematics::Compute(const pinocchio::SE3& oMdes, Vector6d& q) {
     JJt.diagonal().array() += damp;
     v.noalias() = -J.transpose() * JJt.ldlt().solve(err);
     q = pinocchio::integrate(model, q, v * DT);
-    if (!(i % 30))
-      std::cout << i << ": error = " << err.transpose() << std::endl;
+    // if (!(i % 30))
+    //   std::cout << i << ": error = " << err.transpose() << std::endl;
   }
 }

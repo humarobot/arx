@@ -1,8 +1,11 @@
 #pragma once
+#include "pinocchio/algorithm/kinematics.hpp"
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
+#include "geometry_msgs/Pose.h"
 #include "typeAlias.hpp"
+#include <thread>
 
 enum class RobotType { real, sim };
 
@@ -51,14 +54,20 @@ public:
   virtual ~Communicator() = default;
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
+  pinocchio::SE3 GetEETarget() const { return oMdes_; }
   void PrintJointState();
 
+  std::mutex arm_state_mtx_;
+  std::mutex ee_target_mtx_;
+  RobotArm arm_state_now_;
 private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
+  void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);
   Vector6d CalculateTorque(const Vector6d &, const Vector6d &, const Vector6d &);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
+  ros::Subscriber ee_target_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;
   ros::Publisher joint3_pub_;
@@ -66,5 +75,6 @@ private:
   ros::Publisher joint5_pub_;
   ros::Publisher joint6_pub_;
   const RobotType type_;
-  RobotArm arm_state_now_, arm_state_last_;
+  RobotArm arm_state_last_;
+  pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(),Eigen::Vector3d(0.1,0.0,0.16)};
 };

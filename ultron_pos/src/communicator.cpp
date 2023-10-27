@@ -1,27 +1,20 @@
 #include "communicator.hpp"
 
-Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type)
-    : nh_(nh), type_(type) {
-  joint1_pub_ = nh_.advertise<std_msgs::Float64>(
-      "/ultron/joint1_torque_controller/command", 1);
-  joint2_pub_ = nh_.advertise<std_msgs::Float64>(
-      "/ultron/joint2_torque_controller/command", 1);
-  joint3_pub_ = nh_.advertise<std_msgs::Float64>(
-      "/ultron/joint3_torque_controller/command", 1);
-  joint4_pub_ = nh_.advertise<std_msgs::Float64>(
-      "/ultron/joint4_torque_controller/command", 1);
-  joint5_pub_ = nh_.advertise<std_msgs::Float64>(
-      "/ultron/joint5_torque_controller/command", 1);
-  joint6_pub_ = nh_.advertise<std_msgs::Float64>(
-      "/ultron/joint6_torque_controller/command", 1);
+Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type) : nh_(nh), type_(type) {
+  joint1_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint1_torque_controller/command", 1);
+  joint2_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint2_torque_controller/command", 1);
+  joint3_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint3_torque_controller/command", 1);
+  joint4_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint4_torque_controller/command", 1);
+  joint5_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint5_torque_controller/command", 1);
+  joint6_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint6_torque_controller/command", 1);
   if (type_ == RobotType::sim) {
-    joint_state_sub_ = nh_.subscribe("ultron/joint_states", 10,
-                                     &Communicator::JointStateCallback, this);
+    joint_state_sub_ = nh_.subscribe("ultron/joint_states", 10, &Communicator::JointStateCallback, this);
   }
+  ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
 }
 
-void Communicator::JointStateCallback(
-    const sensor_msgs::JointState::ConstPtr &msg) {
+void Communicator::JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {
+  std::lock_guard<std::mutex> lock(arm_state_mtx_);
   // Clear the ultron_arm_now
   arm_state_now_.joints.clear();
   // Push back the joint information to ultron_arm_now
@@ -38,35 +31,36 @@ void Communicator::JointStateCallback(
   }
 }
 
+void Communicator::EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg) {
+  std::lock_guard<std::mutex> lock(ee_target_mtx_);
+  Eigen::Quaterniond q(msg->orientation.w, msg->orientation.x, msg->orientation.y, msg->orientation.z);
+  Eigen::Vector3d t(msg->position.x, msg->position.y, msg->position.z);
+  oMdes_.translation() = t;
+  oMdes_.rotation() = q;
+}
+
 void Communicator::PrintJointState() {
   for (int i = 0; i < arm_state_now_.joints.size(); i++) {
-    std::cout << "Joint " << i << " name: " << arm_state_now_.joints[i].name
-              << std::endl;
-    std::cout << "Joint " << i
-              << " position: " << arm_state_now_.joints[i].position
-              << std::endl;
-    std::cout << "Joint " << i
-              << " velocity: " << arm_state_now_.joints[i].velocity
-              << std::endl;
-    std::cout << "Joint " << i << " effort: " << arm_state_now_.joints[i].effort
-              << std::endl;
+    std::cout << "Joint " << i << " name: " << arm_state_now_.joints[i].name << std::endl;
+    std::cout << "Joint " << i << " position: " << arm_state_now_.joints[i].position << std::endl;
+    std::cout << "Joint " << i << " velocity: " << arm_state_now_.joints[i].velocity << std::endl;
+    std::cout << "Joint " << i << " effort: " << arm_state_now_.joints[i].effort << std::endl;
   }
 }
 
-Vector6d Communicator::CalculateTorque(const Vector6d &qd, const Vector6d &vd, const Vector6d &tau){
+Vector6d Communicator::CalculateTorque(const Vector6d &qd, const Vector6d &vd, const Vector6d &tau) {
   Vector6d tau_cmd;
-
   auto pd = [&](double kp, double kd, double q, double v, double qd, double vd, double ff) {
-    return kp * (qd - q) + kd * (vd - v)+ ff;
+    return kp * (qd - q) + kd * (vd - v) + ff;
   };
-  for(int i = 0; i < 6; i++)
+  std::lock_guard<std::mutex> lock(arm_state_mtx_);
+  for (int i = 0; i < 6; i++)
     tau_cmd(i) = pd(10, 2, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
   return tau_cmd;
 }
 
 void Communicator::SendRecvOnce(const Vector6d &qd, const Vector6d &vd, const Vector6d &tau) {
   if (type_ == RobotType::real) {
-
   } else if (type_ == RobotType::sim) {
     Vector6d tau_cmd = CalculateTorque(qd, vd, tau);
     std_msgs::Float64 joint1_msg;
