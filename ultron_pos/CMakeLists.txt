@@ -148,6 +148,8 @@ src/robotPinocchioModel.cpp
 )
 target_compile_definitions(controller_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
 
+add_executable(test_node src/test.cpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -160,6 +162,12 @@ target_compile_definitions(controller_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SO
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(controller_node
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+
+target_link_libraries(test_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}

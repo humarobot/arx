@@ -1,9 +1,8 @@
 #include "inverseKinematics.hpp"
 
-InverseKinematics::InverseKinematics(RobotPinocchioModel &robot_pino)
-    : robot_pino_(robot_pino) {}
+InverseKinematics::InverseKinematics(RobotPinocchioModel &robot_pino) : robot_pino_(robot_pino) {}
 
-bool InverseKinematics::Compute(const pinocchio::SE3& oMdes, Vector6d& q) {
+bool InverseKinematics::Compute(const pinocchio::SE3 &oMdes, Vector6d &q) {
   pinocchio::Model &model = robot_pino_.Model();
   pinocchio::Data &data = robot_pino_.Data();
   Vector6d err;

@@ -32,6 +32,7 @@ void Communicator::JointStateCallback(const sensor_msgs::JointState::ConstPtr &m
 }
 
 void Communicator::EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg) {
+  hasNewTarget = true;
   std::lock_guard<std::mutex> lock(ee_target_mtx_);
   Eigen::Quaterniond q(msg->orientation.w, msg->orientation.x, msg->orientation.y, msg->orientation.z);
   Eigen::Vector3d t(msg->position.x, msg->position.y, msg->position.z);

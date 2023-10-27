@@ -24,13 +24,13 @@ int main(int argc, char **argv) {
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(robot_pino);
 
-  // Create a thread to communicate with robot
+  // * Create a thread to communicate with robot
   std::thread commu_thread([&]() {
     while (ros::ok()) {
       RobotArm arm_state;
       {
         std::lock_guard<std::mutex> lock(communicator.arm_state_mtx_);
-        arm_state = communicator.arm_state_now_;
+        arm_state = communicator.GetArmStateNow();
       }
       pinocchio::nonLinearEffects(robot_pino.Model(), robot_pino.Data(), arm_state.q, arm_state.v);
       auto tau_ff = robot_pino.Data().nle;
@@ -42,20 +42,45 @@ int main(int argc, char **argv) {
     }
   });
 
-  // Create a thread to do the control
+  // * Create a thread to do the control
   std::thread control_thread([&]() {
     while (ros::ok()) {
       Vector6d q_target = pinocchio::neutral(robot_pino.Model());
-      pinocchio::SE3 ee_target;
-      {
-        std::lock_guard<std::mutex> lock(communicator.ee_target_mtx_);
-        ee_target = communicator.GetEETarget();
+
+      // Get the target from communicator
+      if (communicator.HasNewTarget()) {
+        std::cout << "Processing new target" << std::endl;
+        pinocchio::SE3 ee_target;
+        {
+          std::lock_guard<std::mutex> lock(communicator.ee_target_mtx_);
+          ee_target = communicator.GetEETarget();
+        }
+        std::cout << "Translation:" << ee_target.translation().transpose() << std::endl;
+        std::cout << "Rotation:" << std::endl << ee_target.rotation() << std::endl;
+
+        ik.Compute(ee_target, q_target);
+
+        communicator.ResetNewTarget();
+
+        // Linear interpolation
+        double t = 0.0;
+        double t_max = 1.0;
+        double dt =0.002;
+        Vector6d q_cmd;
+        auto q_last = ik.GetLastQ();
+        while (t < t_max) {
+          q_cmd = (q_target - q_last) * t / t_max + q_last;
+          loop_rate.sleep();
+          {
+            std::lock_guard<std::mutex> lock(qvt_mtx);
+            q = q_cmd;
+          }
+          t+=dt;
+        }
+        t=0.0;
+        ik.SetLastQ(q_target);
       }
-      ik.Compute(ee_target, q_target);
-      {
-        std::lock_guard<std::mutex> lock(qvt_mtx);
-        q = q_target;
-      }
+
       loop_rate.sleep();
     }
   });

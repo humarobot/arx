@@ -16,34 +16,15 @@ struct Joint {
   double velocity;
   double acceleration;
   double effort;
-  // Define a joint constructor
-  Joint() {
-    name = "";
-    position = 0.0;
-    velocity = 0.0;
-    acceleration = 0.0;
-    effort = 0.0;
-  }
 };
 
 // Define a robot arm struct to store robot arm information
 struct RobotArm {
-  std::vector<Joint> joints;
-  Eigen::Vector3d position;
-  Eigen::Quaterniond orientation;
-  Eigen::Matrix3d rotation;
-  Vector6d q, v, tau;
-  // Define a robot arm constructor
-  RobotArm() {
-    // Add 6 joints to the robot arm
-    joints.resize(6);
-    position = Eigen::Vector3d::Zero();
-    orientation = Eigen::Quaterniond::Identity();
-    rotation = Eigen::Matrix3d::Identity();
-    q.setZero();
-    v.setZero();
-    tau.setZero();
-  }
+  std::vector<Joint> joints{6,Joint{}};
+  Eigen::Vector3d position{Eigen::Vector3d::Zero()};
+  Eigen::Quaterniond orientation{Eigen::Quaterniond::Identity()};
+  Eigen::Matrix3d rotation{Eigen::Matrix3d::Identity()};
+  Vector6d q{Vector6d::Zero()}, v{Vector6d::Zero()}, tau{Vector6d::Zero()};
 };
 
 // Define a robot communicator to communicate with robot and planner
@@ -55,11 +36,13 @@ public:
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
   pinocchio::SE3 GetEETarget() const { return oMdes_; }
+  bool HasNewTarget() const { return hasNewTarget; }
+  void ResetNewTarget() { hasNewTarget = false; }
   void PrintJointState();
 
   std::mutex arm_state_mtx_;
   std::mutex ee_target_mtx_;
-  RobotArm arm_state_now_;
+  
 private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);
@@ -75,6 +58,7 @@ private:
   ros::Publisher joint5_pub_;
   ros::Publisher joint6_pub_;
   const RobotType type_;
-  RobotArm arm_state_last_;
+  RobotArm arm_state_last_{},arm_state_now_{};
   pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(),Eigen::Vector3d(0.1,0.0,0.16)};
+  bool hasNewTarget{true};
 };
