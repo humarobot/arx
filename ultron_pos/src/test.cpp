@@ -10,10 +10,10 @@ int main(){
     Eigen::Matrix3d mat{Eigen::Matrix3d::Identity()};
     std::cout << mat << std::endl;
 
-    std::vector<double> t(5,int(9));
-    //print t
-    for(auto i: t){
-      std::cout<<i<<std::endl;
-    }
+    // std::vector<double> t(5,int(9));
+    // //print t
+    // for(auto i: t){
+    //   std::cout<<i<<std::endl;
+    // }
     return 0;
 }

@@ -3,12 +3,12 @@
 #include "pinocchio/algorithm/kinematics.hpp"
 #include "pinocchio/algorithm/jacobian.hpp"
 #include "pinocchio/algorithm/joint-configuration.hpp"
-#include "robotPinocchioModel.hpp"
+#include "pinocchio/parsers/urdf.hpp"
 #include "typeAlias.hpp"
 
 class InverseKinematics {
 public: 
-  InverseKinematics(RobotPinocchioModel& robot_pino);
+  InverseKinematics(std::string urdf_path);
   ~InverseKinematics() = default;
   bool Compute(const pinocchio::SE3& oMdes, Vector6d& q);
   void SetLastQ(const Vector6d& q) { q_last_ = q; }
@@ -16,5 +16,6 @@ public:
 
 private:
   Vector6d q_last_{Vector6d::Zero()};
-  RobotPinocchioModel& robot_pino_;
+  pinocchio::Model model_;
+  pinocchio::Data data_;
 };

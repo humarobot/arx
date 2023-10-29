@@ -4,6 +4,7 @@
 #include "inverseKinematics.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
 #include "robotPinocchioModel.hpp"
+#include "interpolation.hpp"
 #include "ros/ros.h"
 
 int main(int argc, char **argv) {
@@ -22,7 +23,8 @@ int main(int argc, char **argv) {
 
   Communicator communicator(nh, RobotType::sim);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
-  InverseKinematics ik(robot_pino);
+  InverseKinematics ik(std::string{URDF_FILE});
+  Interpolation<Linear> interpolator;
 
   // * Create a thread to communicate with robot
   std::thread commu_thread([&]() {
@@ -57,24 +59,25 @@ int main(int argc, char **argv) {
         }
         std::cout << "Translation:" << ee_target.translation().transpose() << std::endl;
         std::cout << "Rotation:" << std::endl << ee_target.rotation() << std::endl;
-
         ik.Compute(ee_target, q_target);
-
         communicator.ResetNewTarget();
 
         // Linear interpolation
         double t = 0.0;
         double t_max = 1.0;
         double dt =0.002;
-        Vector6d q_cmd;
+        Vector6d q_cmd,v_cmd;
         auto q_last = ik.GetLastQ();
+        interpolator.SetStartEnd(q_last, q_target, t_max);
         while (t < t_max) {
-          q_cmd = (q_target - q_last) * t / t_max + q_last;
-          loop_rate.sleep();
+          interpolator.GetQ(q_cmd, t);
+          interpolator.GetQd(v_cmd, t);
           {
             std::lock_guard<std::mutex> lock(qvt_mtx);
             q = q_cmd;
+            v = v_cmd;
           }
+          loop_rate.sleep();
           t+=dt;
         }
         t=0.0;
