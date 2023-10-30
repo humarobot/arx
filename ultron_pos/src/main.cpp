@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   v.setZero();
   tau.setZero();
 
-  Communicator communicator(nh, RobotType::sim);
+  Communicator communicator(nh, RobotType::real);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(std::string{URDF_FILE});
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   lock2.unlock();
 
   //print q
-  std::cout << "q: " << q.transpose() << std::endl;
+  std::cout << "q init: " << q.transpose() << std::endl;
 
   // * Create a thread to communicate with robot
   std::thread commu_thread([&]() {
@@ -80,11 +80,11 @@ int main(int argc, char **argv) {
 
         // Linear interpolation
         double t = 0.0;
-        double t_max = 2.0;
+        double t_max = 1.0;
         double dt = 0.002;
         Vector6d q_cmd, v_cmd;
         Vector6d q_current = communicator.GetArmStateNow().q;
-        Interpolation<Trapezoidal> interpolator{Vector6d::Constant(2.0), t_max, q_current, q_target};
+        Interpolation<Trapezoidal> interpolator{Vector6d::Constant(5.0), t_max, q_current, q_target};
         std::cout << "is feasible: " << interpolator.isFeasible() << std::endl;
         if (interpolator.isFeasible()) {
           while (t < t_max) {

@@ -16,7 +16,7 @@ void CAN2_ReceiveHandlerProxy(can_frame_t *frame, void *ptr) {
 can::can() {
   can2_adapter.reception_handler_data = (void *)this;
   can2_adapter.reception_handler = &CAN2_ReceiveHandlerProxy;
-  can2_adapter.open("can2");
+  can2_adapter.open("can0");
 
   ros::Time::init();
 }
