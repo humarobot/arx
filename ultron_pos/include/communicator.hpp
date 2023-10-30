@@ -6,6 +6,7 @@
 #include "geometry_msgs/Pose.h"
 #include "typeAlias.hpp"
 #include <thread>
+#include "App/arm_control.h"
 
 enum class RobotType { real, sim };
 
@@ -61,4 +62,5 @@ private:
   RobotArm arm_state_last_{},arm_state_now_{};
   pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(),Eigen::Vector3d(0.1,0.0,0.16)};
   bool hasNewTarget{true};
+  arx_arm arx_real{0};
 };
