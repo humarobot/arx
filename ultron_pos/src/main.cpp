@@ -1,10 +1,10 @@
 #include <thread>
 
 #include "communicator.hpp"
+#include "interpolation.hpp"
 #include "inverseKinematics.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
 #include "robotPinocchioModel.hpp"
-#include "interpolation.hpp"
 #include "ros/ros.h"
 
 int main(int argc, char **argv) {
@@ -24,7 +24,6 @@ int main(int argc, char **argv) {
   Communicator communicator(nh, RobotType::sim);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(std::string{URDF_FILE});
-  Interpolation<Linear> interpolator;
 
   // * Create a thread to communicate with robot
   std::thread commu_thread([&]() {
@@ -64,24 +63,28 @@ int main(int argc, char **argv) {
 
         // Linear interpolation
         double t = 0.0;
-        double t_max = 1.0;
-        double dt =0.002;
-        Vector6d q_cmd,v_cmd;
+        double t_max = 2.0;
+        double dt = 0.002;
+        Vector6d q_cmd, v_cmd;
         auto q_last = ik.GetLastQ();
-        interpolator.SetStartEnd(q_last, q_target, t_max);
-        while (t < t_max) {
-          interpolator.GetQ(q_cmd, t);
-          interpolator.GetQd(v_cmd, t);
-          {
-            std::lock_guard<std::mutex> lock(qvt_mtx);
-            q = q_cmd;
-            v = v_cmd;
+        Interpolation<Trapezoidal> interpolator{Vector6d::Constant(2.0), t_max, q_last, q_target};
+        std::cout << "is feasible: " << interpolator.isFeasible() << std::endl;
+        if (interpolator.isFeasible()) {
+          while (t < t_max) {
+            q_cmd = interpolator.getPosition(t);
+            v_cmd = interpolator.getVelocity(t);
+
+            {
+              std::lock_guard<std::mutex> lock(qvt_mtx);
+              q = q_cmd;
+              v = v_cmd;
+            }
+            loop_rate.sleep();
+            t += dt;
           }
-          loop_rate.sleep();
-          t+=dt;
+          t = 0.0;
+          ik.SetLastQ(q_target);
         }
-        t=0.0;
-        ik.SetLastQ(q_target);
       }
 
       loop_rate.sleep();

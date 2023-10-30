@@ -55,8 +55,10 @@ Vector6d Communicator::CalculateTorque(const Vector6d &qd, const Vector6d &vd, c
     return kp * (qd - q) + kd * (vd - v) + ff;
   };
   std::lock_guard<std::mutex> lock(arm_state_mtx_);
-  for (int i = 0; i < 6; i++)
-    tau_cmd(i) = pd(10, 2, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
+  for (int i = 0; i < 3; i++)
+    tau_cmd(i) = pd(60, 1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
+  for (int i=3;i<6;i++)
+    tau_cmd(i) = pd(15, 0.5, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
   return tau_cmd;
 }
 
