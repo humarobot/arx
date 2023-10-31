@@ -32,7 +32,19 @@ bool InverseKinematics::Compute(const pinocchio::SE3 &oMdes, Vector6d &q) {
     JJt.diagonal().array() += damp;
     v.noalias() = -J.transpose() * JJt.ldlt().solve(err);
     q = pinocchio::integrate(model_, q, v * DT);
+    q_last_ = q;
     // if (!(i % 30))
     //   std::cout << i << ": error = " << err.transpose() << std::endl;
   }
+}
+
+Vector6d InverseKinematics::GetJointsVelocity(const Vector6d& V){
+  Vector6d qd;
+  pinocchio::Data::Matrix6x J(6, model_.nv);
+  pinocchio::computeJointJacobian(model_, data_, q_last_, 6, J);
+  pinocchio::Data::Matrix6 JJt;
+  JJt.noalias() = J * J.transpose();
+  qd = J.transpose() * JJt.ldlt().solve(V);
+  std::cout << "qd: " << qd.transpose() << std::endl;
+  return qd;
 }

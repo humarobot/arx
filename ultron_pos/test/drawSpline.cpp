@@ -7,21 +7,22 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "drawSpline");
   ros::NodeHandle nh;
 
-  std::vector<KnotPoint> knots(6);
-  knots[0].position << 0, 0, 0;
-  knots[0].velocity << 0.1, 0, 0;
-  knots[1].position << 0.2, 0, 0;
-  knots[1].velocity << 1, 0, 0;
-  knots[2].position << 1.9, 0.5, 1;
-  knots[2].velocity << 0.1, 0, 0;
-  knots[3].position << 2.1, 0.5, 1;
-  knots[3].velocity << 0.1, 0, 0;
-  knots[4].position << 3.8, 0, 0;
-  knots[4].velocity << 1, 0, 0;
-  knots[5].position << 4, 0, 0;
-  knots[5].velocity << 0.1, 0, 0;
+  std::vector<KnotPoint> knots(3);
+  knots[0].position << 0.1, 0, 0.16;
+  knots[0].velocity << 0, 0, 0;
+  knots[1].position << 0.3, 0, 0.3;
+  knots[1].velocity << 0, 0, 0;
+  knots[2].position << 0.4, 0., 0.2;
+  knots[2].velocity << 0, 0, 0;
+  // knots[3].position << 2.1, 0.5, 1;
+  // knots[3].velocity << 0.1, 0, 0;
+  // knots[4].position << 3.8, 0, 0;
+  // knots[4].velocity << 1, 0, 0;
+  // knots[5].position << 4, 0, 0;
+  // knots[5].velocity << 0.1, 0, 0;
 
-  HermiteSpline hermite_spline{knots, 10};
+  double t_max = 3.0;
+  HermiteSpline hermite_spline{knots, t_max};
   ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 10);
   ros::Publisher pose_pub = nh.advertise<geometry_msgs::PointStamped>("Point", 10);
   ros::Rate loop_rate(100);
@@ -38,7 +39,7 @@ int main(int argc, char** argv) {
   line_strip.scale.x = 0.01;
   line_strip.color.r = 1.0;
   line_strip.color.a = 1.0;
-  for (double t = 0.0; t < 10.0; t += 0.01) {
+  for (double t = 0.0; t < t_max; t += 0.01) {
     geometry_msgs::Point p;
     auto position = hermite_spline.getPosition(t);
     p.x = position(0);
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
 
   while (ros::ok()) {
     marker_pub.publish(line_strip);
-    for(double t=0.0;t<10.0; t+=0.01){
+    for(double t=0.0;t<t_max; t+=0.01){
       // Publish the current position
       geometry_msgs::PointStamped p;
       auto position = hermite_spline.getPosition(t);

@@ -11,7 +11,7 @@ HermiteSpline::HermiteSpline(const std::vector<KnotPoint>& knots, const double t
   }
 }
 
-void HermiteSpline::SetKnotsTMax(const std::vector<KnotPoint>& knots,const double t_max) {
+void HermiteSpline::SetKnotsTMax(const std::vector<KnotPoint>& knots, const double t_max) {
   t_max_ = t_max;
   knots_ = knots;
   num_knots_ = knots_.size();
@@ -54,8 +54,11 @@ Vector3d HermiteSpline::getVelocity(double t) const {
   } else {
     for (int i = 0; i < num_segments_; ++i) {
       if (t >= x_knots_(i) && t <= x_knots_(i + 1)) {
-        velocity = h00d(t)*knots_[i].position + h10d(t)*(x_knots_(i + 1) - x_knots_(i)) * knots_[i].velocity +
-                   h01d(t)*knots_[i + 1].position + h11d(t)*(x_knots_(i + 1) - x_knots_(i)) * knots_[i + 1].velocity;
+        t = (t-x_knots_(i))/(x_knots_(i+1)-x_knots_(i));
+        velocity =
+            (h00d(t) * knots_[i].position + h10d(t) * (x_knots_(i + 1) - x_knots_(i)) * knots_[i].velocity +
+             h01d(t) * knots_[i + 1].position + h11d(t) * (x_knots_(i + 1) - x_knots_(i)) * knots_[i + 1].velocity) /
+            (x_knots_(i + 1) - x_knots_(i));
         break;
       }
     }

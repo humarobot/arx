@@ -1,12 +1,13 @@
+#include <chrono>
 #include <thread>
 
+#include "HermiteSpline.hpp"
 #include "communicator.hpp"
 #include "interpolation.hpp"
 #include "inverseKinematics.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
 #include "robotPinocchioModel.hpp"
 #include "ros/ros.h"
-#include <chrono>
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "ultron");
@@ -36,7 +37,7 @@ int main(int argc, char **argv) {
   q = arm_state.q;
   lock2.unlock();
 
-  //print q
+  // print q
   std::cout << "q init: " << q.transpose() << std::endl;
 
   // * Create a thread to communicate with robot
@@ -58,50 +59,48 @@ int main(int argc, char **argv) {
 
   // * Create a thread to do the control
   std::thread control_thread([&]() {
+    // Define a spline
+    std::vector<KnotPoint> knots_fw(3);
+    knots_fw[0].position << 0.1, 0, 0.16;
+    knots_fw[0].velocity << 0, 0, 0;
+    knots_fw[1].position << 0.3, 0, 0.3;
+    knots_fw[1].velocity << 0, 0, 0;
+    knots_fw[2].position << 0.4, 0., 0.2;
+    knots_fw[2].velocity << 0, 0, 0;
+
+    std::vector<KnotPoint> knots_bw(3);
+    knots_bw[0].position << 0.4, 0., 0.2;
+    knots_bw[0].velocity << 0, 0, 0;
+    knots_bw[1].position << 0.3, 0, 0.3;
+    knots_bw[1].velocity << 0, 0, 0;
+    knots_bw[2].position << 0.1, 0, 0.16;
+    knots_bw[2].velocity << 0, 0, 0;
+
+    double t_max{3.0};
+    HermiteSpline hermite_spline_fw{knots_fw, t_max};
+    HermiteSpline hermite_spline_bw{knots_bw, t_max};
+
+    Vector6d q_target = pinocchio::neutral(robot_pino.Model());
+    Vector6d v_target = Vector6d::Zero();
+    double t{0.0};
     while (ros::ok()) {
-      Vector6d q_target = pinocchio::neutral(robot_pino.Model());
-
-      // Get the target from communicator
-      if (communicator.HasNewTarget()) {
-        std::cout << "Processing new target" << std::endl;
-        pinocchio::SE3 ee_target;
-        {
-          std::lock_guard<std::mutex> lock(communicator.ee_target_mtx_);
-          ee_target = communicator.GetEETarget();
-        }
-        std::cout << "Translation:" << ee_target.translation().transpose() << std::endl;
-        std::cout << "Rotation:" << std::endl << ee_target.rotation() << std::endl;
-        if(!ik.Compute(ee_target, q_target)){
-          std::cout << "IK failed" << std::endl;
-          communicator.ResetNewTarget();
-          continue;
-        }
-        communicator.ResetNewTarget();
-
-        // Linear interpolation
-        double t = 0.0;
-        double t_max = 1.0;
-        double dt = 0.002;
-        Vector6d q_cmd, v_cmd;
-        Vector6d q_current = communicator.GetArmStateNow().q;
-        Interpolation<Trapezoidal> interpolator{Vector6d::Constant(4.0), t_max, q_current, q_target};
-        std::cout << "is feasible: " << interpolator.isFeasible() << std::endl;
-        if (interpolator.isFeasible()) {
-          while (t < t_max) {
-            q_cmd = interpolator.getPosition(t);
-            v_cmd = interpolator.getVelocity(t);
-            {
-              std::lock_guard<std::mutex> lock(qvt_mtx);
-              q = q_cmd;
-              v = v_cmd;
-            }
-            loop_rate.sleep();
-            t += dt;
-          }
-          t = 0.0;
-        }
+      Vector3d posDes = hermite_spline_fw.getPosition(t);
+      Vector3d velDes = hermite_spline_fw.getVelocity(t);
+      pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(), posDes);
+      Vector6d V;
+      V << velDes, Vector3d::Zero(); 
+      ik.Compute(oMdes, q_target);
+      v_target = ik.GetJointsVelocity(V);
+      {
+        std::lock_guard<std::mutex> lock(qvt_mtx);
+        q = q_target;
+        v = v_target;
       }
-
+      t+=0.002;
+      if(t>=t_max){
+        t=0.0;
+        std::swap(hermite_spline_fw,hermite_spline_bw);
+      }
       loop_rate.sleep();
     }
   });

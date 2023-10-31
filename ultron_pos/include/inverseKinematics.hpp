@@ -11,6 +11,7 @@ public:
   InverseKinematics(std::string urdf_path);
   ~InverseKinematics() = default;
   bool Compute(const pinocchio::SE3& oMdes, Vector6d& q);
+  Vector6d GetJointsVelocity(const Vector6d& V);
   void SetLastQ(const Vector6d& q) { q_last_ = q; }
   Vector6d GetLastQ() const { return q_last_; }
 
