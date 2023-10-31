@@ -148,10 +148,16 @@ src/main.cpp
 src/communicator.cpp
 src/inverseKinematics.cpp
 src/robotPinocchioModel.cpp
+src/HermiteSpline.cpp
 )
 target_compile_definitions(controller_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
 
 add_executable(test_node src/test.cpp)
+add_executable(draw_spline 
+test/drawSpline.cpp
+src/HermiteSpline.cpp
+)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -171,6 +177,12 @@ target_link_libraries(controller_node
 )
 
 target_link_libraries(test_node
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+
+target_link_libraries(draw_spline
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}
@@ -230,3 +242,11 @@ target_link_libraries(test_node
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(test_hermite_spline
+  test/testHermiteSpline.cpp
+  src/HermiteSpline.cpp
+)
+target_link_libraries(test_hermite_spline
+  gtest_main
+)
