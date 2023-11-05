@@ -8,6 +8,7 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include "robotPinocchioModel.hpp"
 #include "ros/ros.h"
+#include "trapezoidalSlerp.hpp"
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "ultron");
@@ -80,15 +81,26 @@ int main(int argc, char **argv) {
     HermiteSpline hermite_spline_fw{knots_fw, t_max};
     HermiteSpline hermite_spline_bw{knots_bw, t_max};
 
+    Quat q_s{Quat::Identity()};
+    Quat q_e{Quat{1,0,0.5,0.1}.normalized()};
+
+    TrapezoidalSlerp tslerp_fw{q_s,q_e};
+    TrapezoidalSlerp tslerp_bw{q_e,q_s};
+
     Vector6d q_target = pinocchio::neutral(robot_pino.Model());
     Vector6d v_target = Vector6d::Zero();
     double t{0.0};
     while (ros::ok()) {
       Vector3d posDes = hermite_spline_fw.getPosition(t);
       Vector3d velDes = hermite_spline_fw.getVelocity(t);
-      pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(), posDes);
+
+      double t_prime = t/t_max;
+      Quat oriDes = tslerp_fw.GetQuat(t_prime);
+      Vector3d omegaDes = tslerp_fw.GetOmega(t_prime);
+
+      pinocchio::SE3 oMdes(oriDes, posDes);
       Vector6d V;
-      V << velDes, Vector3d::Zero(); 
+      V << velDes, omegaDes; 
       ik.Compute(oMdes, q_target);
       v_target = ik.GetJointsVelocity(V);
       {
@@ -100,6 +112,7 @@ int main(int argc, char **argv) {
       if(t>=t_max){
         t=0.0;
         std::swap(hermite_spline_fw,hermite_spline_bw);
+        std::swap(tslerp_fw,tslerp_bw);
       }
       loop_rate.sleep();
     }
