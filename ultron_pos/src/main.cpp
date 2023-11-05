@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     knots_fw[0].position << 0.1, 0, 0.16;
     knots_fw[0].velocity << 0, 0, 0;
     knots_fw[1].position << 0.3, 0, 0.3;
-    knots_fw[1].velocity << 0, 0, 0;
+    knots_fw[1].velocity << 0., 0, 0;
     knots_fw[2].position << 0.4, 0., 0.2;
     knots_fw[2].velocity << 0, 0, 0;
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     knots_bw[0].position << 0.4, 0., 0.2;
     knots_bw[0].velocity << 0, 0, 0;
     knots_bw[1].position << 0.3, 0, 0.3;
-    knots_bw[1].velocity << 0, 0, 0;
+    knots_bw[1].velocity << -0, 0, 0;
     knots_bw[2].position << 0.1, 0, 0.16;
     knots_bw[2].velocity << 0, 0, 0;
 

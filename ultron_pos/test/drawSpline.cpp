@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   knots[0].position << 0.1, 0, 0.16;
   knots[0].velocity << 0, 0, 0;
   knots[1].position << 0.3, 0, 0.3;
-  knots[1].velocity << 0, 0, 0;
+  knots[1].velocity << 0.1, 0, 0;
   knots[2].position << 0.4, 0., 0.2;
   knots[2].velocity << 0, 0, 0;
   // knots[3].position << 2.1, 0.5, 1;

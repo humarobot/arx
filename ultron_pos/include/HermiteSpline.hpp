@@ -1,3 +1,4 @@
+#pragma once
 #include "typeAlias.hpp"
 #include <vector>
 

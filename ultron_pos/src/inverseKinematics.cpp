@@ -45,6 +45,5 @@ Vector6d InverseKinematics::GetJointsVelocity(const Vector6d& V){
   pinocchio::Data::Matrix6 JJt;
   JJt.noalias() = J * J.transpose();
   qd = J.transpose() * JJt.ldlt().solve(V);
-  std::cout << "qd: " << qd.transpose() << std::endl;
   return qd;
 }
