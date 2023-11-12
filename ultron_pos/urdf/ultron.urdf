@@ -274,6 +274,7 @@ Stephen Brawner (brawner@gmail.com)
   <!-- ros_control plugins -->
   <gazebo>
     <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+      <robotParam>ultron_description</robotParam>
       <robotNamespace>/ultron</robotNamespace>
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
       <legacyModeNS>true</legacyModeNS>

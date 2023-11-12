@@ -60,60 +60,20 @@ int main(int argc, char **argv) {
 
   // * Create a thread to do the control
   std::thread control_thread([&]() {
-    // Define a spline
-    std::vector<KnotPoint> knots_fw(3);
-    knots_fw[0].position << 0.1, 0, 0.16;
-    knots_fw[0].velocity << 0, 0, 0;
-    knots_fw[1].position << 0.3, 0, 0.3;
-    knots_fw[1].velocity << 0., 0, 0;
-    knots_fw[2].position << 0.4, 0., 0.2;
-    knots_fw[2].velocity << 0, 0, 0;
-
-    std::vector<KnotPoint> knots_bw(3);
-    knots_bw[0].position << 0.4, 0., 0.2;
-    knots_bw[0].velocity << 0, 0, 0;
-    knots_bw[1].position << 0.3, 0, 0.3;
-    knots_bw[1].velocity << -0, 0, 0;
-    knots_bw[2].position << 0.1, 0, 0.16;
-    knots_bw[2].velocity << 0, 0, 0;
-
-    double t_max{3.0};
-    HermiteSpline hermite_spline_fw{knots_fw, t_max};
-    HermiteSpline hermite_spline_bw{knots_bw, t_max};
-
-    Quat q_s{Quat::Identity()};
-    Quat q_e{Quat{1,0,0.5,0.1}.normalized()};
-
-    TrapezoidalSlerp tslerp_fw{q_s,q_e};
-    TrapezoidalSlerp tslerp_bw{q_e,q_s};
-
-    Vector6d q_target = pinocchio::neutral(robot_pino.Model());
-    Vector6d v_target = Vector6d::Zero();
-    double t{0.0};
     while (ros::ok()) {
-      Vector3d posDes = hermite_spline_fw.getPosition(t);
-      Vector3d velDes = hermite_spline_fw.getVelocity(t);
-
-      double t_prime = t/t_max;
-      Quat oriDes = tslerp_fw.GetQuat(t_prime);
-      Vector3d omegaDes = tslerp_fw.GetOmega(t_prime);
-
-      pinocchio::SE3 oMdes(oriDes, posDes);
-      Vector6d V;
-      V << velDes, omegaDes; 
-      ik.Compute(oMdes, q_target);
-      v_target = ik.GetJointsVelocity(V);
-      {
-        std::lock_guard<std::mutex> lock(qvt_mtx);
-        q = q_target;
-        v = v_target;
+      if (communicator.HasNewTraj()) {
+        auto q_traj = communicator.GetQTraj();
+        for (auto q_target : q_traj) {
+          {
+            std::lock_guard<std::mutex> lock(qvt_mtx);
+            q = q_target;
+            // v = v_target;
+          }
+          ros::Duration(0.05).sleep();
+        }
+        communicator.ResetNewTraj();
       }
-      t+=0.002;
-      if(t>=t_max){
-        t=0.0;
-        std::swap(hermite_spline_fw,hermite_spline_bw);
-        std::swap(tslerp_fw,tslerp_bw);
-      }
+
       loop_rate.sleep();
     }
   });

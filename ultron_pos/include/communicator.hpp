@@ -8,6 +8,7 @@
 #include <thread>
 #include "App/arm_control.h"
 #include <chrono>
+#include "lion_msg/armTraj.h"
 
 enum class RobotType { real, sim };
 
@@ -38,9 +39,12 @@ public:
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
   pinocchio::SE3 GetEETarget() const { return oMdes_; }
-  bool HasNewTarget() const { return hasNewTarget; }
-  void ResetNewTarget() { hasNewTarget = false; }
+  bool HasNewTarget() const { return hasNewTarget_; }
+  bool HasNewTraj() const { return hasNewTraj_; }
+  void ResetNewTarget() { hasNewTarget_ = false; }
+  void ResetNewTraj() { hasNewTraj_ = false; }
   void PrintJointState();
+  std::vector<Vector6d> GetQTraj() const { return qTraj_; }
 
   std::mutex arm_state_mtx_;
   std::mutex ee_target_mtx_;
@@ -48,11 +52,13 @@ public:
 private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);
+  void ArmTrajCallback(const lion_msg::armTraj::ConstPtr &msg);
   Vector6d CalculateTorque(const Vector6d &, const Vector6d &, const Vector6d &);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
   ros::Subscriber ee_target_sub_;
+  ros::Subscriber arm_traj_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;
   ros::Publisher joint3_pub_;
@@ -62,6 +68,12 @@ private:
   const RobotType type_;
   RobotArm arm_state_last_{},arm_state_now_{};
   pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(),Eigen::Vector3d(0.1,0.0,0.16)};
-  bool hasNewTarget{true};
+  bool hasNewTarget_{true};
   arx_arm arx_real{0};
+
+  // Arm trajectory related variables
+  std::vector<Vector6d> qTraj_,vTraj_;
+  int numKnots_{0};
+  double totalTime_{0.0};
+  bool hasNewTraj_{false};
 };
