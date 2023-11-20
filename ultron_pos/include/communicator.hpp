@@ -3,6 +3,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/Bool.h"
 #include "geometry_msgs/Pose.h"
 #include "typeAlias.hpp"
 #include <thread>
@@ -48,17 +49,20 @@ public:
 
   std::mutex arm_state_mtx_;
   std::mutex ee_target_mtx_;
-  
+
+  int execPriority_{0};
 private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);
   void ArmTrajCallback(const lion_msg::armTraj::ConstPtr &msg);
+  void ExecuteCallback(const std_msgs::Bool::ConstPtr &msg);
   Vector6d CalculateTorque(const Vector6d &, const Vector6d &, const Vector6d &);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
   ros::Subscriber ee_target_sub_;
   ros::Subscriber arm_traj_sub_;
+  ros::Subscriber execute_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;
   ros::Publisher joint3_pub_;

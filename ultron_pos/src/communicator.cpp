@@ -29,10 +29,18 @@ Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type) : nh
       arm_state_now_.joints.push_back(joint);
     }
   }
-  ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
-
-  arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
+  execute_sub_ = nh_.subscribe("/execute_traj", 10, &Communicator::ExecuteCallback, this);
+  // ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
+  // arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
   std::cout << "Communicator init done" << std::endl;
+}
+
+void Communicator::ExecuteCallback(const std_msgs::Bool::ConstPtr &msg) {
+  if (msg->data) {
+    std::cout << "ExecuteTrajectoryCallback" << std::endl;
+    execPriority_++;
+  }
+  
 }
 
 void Communicator::JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg) {

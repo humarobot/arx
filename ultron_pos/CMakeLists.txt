@@ -150,9 +150,10 @@ src/communicator.cpp
 src/inverseKinematics.cpp
 src/robotPinocchioModel.cpp
 src/HermiteSpline.cpp
+src/trajectoryLoader.cpp
 )
 target_compile_definitions(controller_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
-
+target_compile_definitions(controller_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_executable(test_node src/test.cpp)
 add_executable(draw_spline 
 test/drawSpline.cpp

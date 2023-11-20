@@ -8,6 +8,7 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include "robotPinocchioModel.hpp"
 #include "ros/ros.h"
+#include "trajectoryLoader.hpp"
 #include "trapezoidalSlerp.hpp"
 
 int main(int argc, char **argv) {
@@ -24,6 +25,7 @@ int main(int argc, char **argv) {
   v.setZero();
   tau.setZero();
 
+  TrajectoryLoader traj_loader;
   Communicator communicator(nh, RobotType::sim);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(std::string{URDF_FILE});
@@ -38,8 +40,8 @@ int main(int argc, char **argv) {
   q = arm_state.q;
   lock2.unlock();
 
-  // print q
-  std::cout << "q init: " << q.transpose() << std::endl;
+  // // print q
+  // std::cout << "q init: " << q.transpose() << std::endl;
 
   // * Create a thread to communicate with robot
   std::thread commu_thread([&]() {
@@ -61,17 +63,22 @@ int main(int argc, char **argv) {
   // * Create a thread to do the control
   std::thread control_thread([&]() {
     while (ros::ok()) {
-      if (communicator.HasNewTraj()) {
-        auto q_traj = communicator.GetQTraj();
-        for (auto q_target : q_traj) {
+      if (communicator.execPriority_ == 1) {
+        // robot arm move to trajectory initial position
+      } else if (communicator.execPriority_ == 2) {
+        // execute trajectory
+        auto q_traj = traj_loader.GetArmStateTrajectory();
+        auto v_traj = traj_loader.GetArmVelTrajectory();
+        for (int i = 0; i < q_traj.cols(); i++) {
           {
             std::lock_guard<std::mutex> lock(qvt_mtx);
-            q = q_target;
-            // v = v_target;
+            q = q_traj.col(i);
+            v = v_traj.col(i);
           }
           ros::Duration(0.05).sleep();
         }
-        communicator.ResetNewTraj();
+        communicator.execPriority_ = 0;
+        
       }
 
       loop_rate.sleep();
