@@ -51,6 +51,7 @@ public:
   std::mutex ee_target_mtx_;
 
   int execPriority_{0};
+  bool atInitPosi_{false};
 private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);

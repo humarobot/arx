@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
   q = arm_state.q;
   lock2.unlock();
 
-  // // print q
-  // std::cout << "q init: " << q.transpose() << std::endl;
+  // print q
+  std::cout << "q init: " << q.transpose() << std::endl;
 
   // * Create a thread to communicate with robot
   std::thread commu_thread([&]() {
@@ -63,8 +63,30 @@ int main(int argc, char **argv) {
   // * Create a thread to do the control
   std::thread control_thread([&]() {
     while (ros::ok()) {
-      if (communicator.execPriority_ == 1) {
+      if (communicator.execPriority_ == 1 && !communicator.atInitPosi_) {
         // robot arm move to trajectory initial position
+        // Linear interpolation
+        double t = 0.0;
+        double t_max = 2.0;
+        double dt = 0.002;
+        Vector6d q_cmd, v_cmd;
+        auto q_traj = traj_loader.GetArmStateTrajectory();
+        Vector6d q_target = q_traj.col(0);
+        Interpolation<Trapezoidal> interpolator{Vector6d::Constant(2.0), t_max, q, q_target};
+        while (t < t_max) {
+          q_cmd = interpolator.getPosition(t);
+          v_cmd = interpolator.getVelocity(t);
+
+          {
+            std::lock_guard<std::mutex> lock(qvt_mtx);
+            q = q_cmd;
+            v = v_cmd;
+          }
+          loop_rate.sleep();
+          t += dt;
+        }
+        communicator.atInitPosi_ = true;
+
       } else if (communicator.execPriority_ == 2) {
         // execute trajectory
         auto q_traj = traj_loader.GetArmStateTrajectory();
@@ -78,7 +100,7 @@ int main(int argc, char **argv) {
           ros::Duration(0.05).sleep();
         }
         communicator.execPriority_ = 0;
-        
+        communicator.atInitPosi_ = false;
       }
 
       loop_rate.sleep();
