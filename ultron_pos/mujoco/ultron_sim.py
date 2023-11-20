@@ -62,7 +62,6 @@ class UltronSim(MuJoCoBase):
         mj.mj_step(self.model, self.data)
         # * Publish joint positions and velocities
         jointsPosVel = Float64MultiArray()
-        # get last 10 element of qpos and qvel
         qp = self.data.qpos.copy()
         qv = self.data.qvel.copy()
         jointsPosVel.data = np.concatenate((qp,qv))

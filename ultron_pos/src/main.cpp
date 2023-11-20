@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   tau.setZero();
 
   TrajectoryLoader traj_loader;
-  Communicator communicator(nh, RobotType::sim);
+  Communicator communicator(nh, RobotType::simMujoco);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(std::string{URDF_FILE});
 
@@ -73,20 +73,26 @@ int main(int argc, char **argv) {
         auto q_traj = traj_loader.GetArmStateTrajectory();
         Vector6d q_target = q_traj.col(0);
         Interpolation<Trapezoidal> interpolator{Vector6d::Constant(2.0), t_max, q, q_target};
-        while (t < t_max) {
-          q_cmd = interpolator.getPosition(t);
-          v_cmd = interpolator.getVelocity(t);
+        if (interpolator.isFeasible()) {
+          while (t < t_max) {
+            q_cmd = interpolator.getPosition(t);
+            v_cmd = interpolator.getVelocity(t);
 
-          {
-            std::lock_guard<std::mutex> lock(qvt_mtx);
-            q = q_cmd;
-            v = v_cmd;
+            {
+              std::lock_guard<std::mutex> lock(qvt_mtx);
+              q = q_cmd;
+              v = v_cmd;
+            }
+            loop_rate.sleep();
+            t += dt;
           }
-          loop_rate.sleep();
-          t += dt;
+          communicator.atInitPosi_ = true;
+        } else {
+          std::cout << "Error: Trajectory is not feasible" << std::endl;
+          ros::shutdown();
         }
-        communicator.atInitPosi_ = true;
 
+        
       } else if (communicator.execPriority_ == 2) {
         // execute trajectory
         auto q_traj = traj_loader.GetArmStateTrajectory();

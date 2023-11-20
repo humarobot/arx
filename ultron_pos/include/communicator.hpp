@@ -3,6 +3,7 @@
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/Float64MultiArray.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/Pose.h"
 #include "typeAlias.hpp"
@@ -11,7 +12,7 @@
 #include <chrono>
 #include "lion_msg/armTraj.h"
 
-enum class RobotType { real, sim };
+enum class RobotType { real, simGazebo, simMujoco };
 
 // Define a robot arm joint struct to store joint information
 struct Joint {
@@ -35,7 +36,7 @@ struct RobotArm {
 class Communicator {
 public:
   Communicator(const ros::NodeHandle &nh,
-               const RobotType type = RobotType::sim);
+               const RobotType type = RobotType::simGazebo);
   virtual ~Communicator() = default;
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
@@ -58,6 +59,7 @@ private:
   void ArmTrajCallback(const lion_msg::armTraj::ConstPtr &msg);
   void ExecuteCallback(const std_msgs::Bool::ConstPtr &msg);
   Vector6d CalculateTorque(const Vector6d &, const Vector6d &, const Vector6d &);
+  void JointsPosVelCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
@@ -70,6 +72,11 @@ private:
   ros::Publisher joint4_pub_;
   ros::Publisher joint5_pub_;
   ros::Publisher joint6_pub_;
+  //For mujoco
+  ros::Publisher jointsTorque_pub_;
+  ros::Subscriber jointsPosVel_sub_;
+  
+
   const RobotType type_;
   RobotArm arm_state_last_{},arm_state_now_{};
   pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(),Eigen::Vector3d(0.1,0.0,0.16)};

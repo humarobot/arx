@@ -20,10 +20,10 @@ class TrajectoryLoader {
   TrajectoryLoader() {
     stateTrajectory_ = LoadMatrix(stateFilePath_);
     velTrajectory_ = LoadMatrix(velocityFilePath_);
-    std::cout<<"stateTrajectory_:"<<std::endl;
-    std::cout<<stateTrajectory_.transpose()<<std::endl;
-    std::cout<<"velTrajectory_:"<<std::endl;
-    std::cout<<velTrajectory_.transpose()<<std::endl;
+    // std::cout<<"stateTrajectory_:"<<std::endl;
+    // std::cout<<stateTrajectory_.transpose()<<std::endl;
+    // std::cout<<"velTrajectory_:"<<std::endl;
+    // std::cout<<velTrajectory_.transpose()<<std::endl;
   }
   // Constructor with default values for total time and time step
   TrajectoryLoader(std::string stateFilePath, std::string velocityFilePath, double totalTime = 3.0,
