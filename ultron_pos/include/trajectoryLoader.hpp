@@ -3,12 +3,12 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include "typeAlias.hpp"
 
 class TrajectoryLoader {
  private:
   std::string stateFilePath_{std::string(CMAKE_DIR) + std::string("/result/state.csv")};
   std::string velocityFilePath_{std::string(CMAKE_DIR) + std::string("/result/vel.csv")};
-  double totalTime_{3.0};
   double timeStep_{0.05};
   std::vector<double> time;
   Eigen::MatrixXd stateTrajectory_;
@@ -17,6 +17,7 @@ class TrajectoryLoader {
   Eigen::MatrixXd LoadMatrix(std::string fileName);
 
  public:
+ double totalTime_{3.0};
   TrajectoryLoader() {
     stateTrajectory_ = LoadMatrix(stateFilePath_);
     velTrajectory_ = LoadMatrix(velocityFilePath_);
@@ -37,4 +38,6 @@ class TrajectoryLoader {
   Eigen::MatrixXd GetArmStateTrajectory() const;
   Eigen::MatrixXd GetArmVelTrajectory() const;
 
+  Vector6d GetArmStateAtTime(double time) const;
+  Vector6d GetArmVelAtTime(double time) const;
 };

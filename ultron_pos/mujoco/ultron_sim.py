@@ -6,7 +6,7 @@ import rospy
 import rospkg
 from std_msgs.msg import Float64MultiArray,Bool
 from geometry_msgs.msg import Pose,Twist
-
+import time
 
 
 class UltronSim(MuJoCoBase):
@@ -55,9 +55,12 @@ class UltronSim(MuJoCoBase):
 
   def simulate(self):
     while not glfw.window_should_close(self.window):
+      # print(self.data.time)
       simstart = self.data.time
 
       while (self.data.time - simstart <= 1.0/60.0 and not self.pause_flag):
+        # get current absolute time 
+        now = glfw.get_time()
         # Step simulation environment
         mj.mj_step(self.model, self.data)
         # * Publish joint positions and velocities
@@ -66,7 +69,10 @@ class UltronSim(MuJoCoBase):
         qv = self.data.qvel.copy()
         jointsPosVel.data = np.concatenate((qp,qv))
         self.pubJoints.publish(jointsPosVel)
-        self.rate.sleep()
+        # sleep untile 2ms don't use rospy.Rate
+        while (glfw.get_time() - now) < 0.002:
+          pass
+        # print(glfw.get_time() - now)
 
 
       if self.data.time >= self.simend:
@@ -93,12 +99,12 @@ class UltronSim(MuJoCoBase):
 def main():
     # ros init
     rospy.init_node('ultron_sim', anonymous=True)
-
+    # time.sleep(1)
     # get xml path
     rospack = rospkg.RosPack()
     rospack.list()
-    hector_desc_path = rospack.get_path('ultron_pos')
-    xml_path = hector_desc_path + "/urdf/ultron.xml"
+    ultron_desc_path = rospack.get_path('ultron_pos')
+    xml_path = ultron_desc_path + "/urdf/ultron.xml"
     sim = UltronSim(xml_path)
     sim.reset()
     sim.simulate()

@@ -142,10 +142,10 @@ Vector6d Communicator::CalculateTorque(const Vector6d &qd, const Vector6d &vd, c
   std::lock_guard<std::mutex> lock(arm_state_mtx_);
   for (int i = 0; i < 3; i++)
     tau_cmd(i) =
-        pd(100, 0.1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
-  tau_cmd(3) = pd(35, 0.1, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
-  tau_cmd(4) = pd(15, 0., arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
-  tau_cmd(5) = pd(15, 0., arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
+        pd(60, 1.1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
+  tau_cmd(3) = pd(15, 0.8, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
+  tau_cmd(4) = pd(5, 0.5, arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
+  tau_cmd(5) = pd(5, 0.5, arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
   return tau_cmd;
 }
 
@@ -198,6 +198,15 @@ void Communicator::SendRecvOnce(const Vector6d &qd, const Vector6d &vd, const Ve
     //print qd
     // std::cout<<"tau_cmd:"<<std::endl;
     // std::cout<<tau_cmd.transpose()<<std::endl;
+    //clamp tau_cmd to [-10,10]
+    for (int i = 0; i < 6; i++){
+      if (tau_cmd(i) > 10){
+        tau_cmd(i) = 10;
+      }
+      else if (tau_cmd(i) < -10){
+        tau_cmd(i) = -10;
+      }
+    }
     std_msgs::Float64MultiArray tau_cmd_msg;
     tau_cmd_msg.data.resize(6);
     for (int i = 0; i < 6; i++){

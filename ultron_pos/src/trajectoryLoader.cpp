@@ -22,14 +22,30 @@ Eigen::MatrixXd TrajectoryLoader::LoadMatrix(std::string fileName) {
     }
     matrixRowNumber++;  // update the column numbers
   }
-  return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(matrixEntries.data(), matrixRowNumber,
-                                                         matrixEntries.size() / matrixRowNumber);
+  return Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(
+      matrixEntries.data(), matrixRowNumber, matrixEntries.size() / matrixRowNumber);
 }
 
-Eigen::MatrixXd TrajectoryLoader::GetArmStateTrajectory() const { 
-  return stateTrajectory_.bottomRows(6);
+Eigen::MatrixXd TrajectoryLoader::GetArmStateTrajectory() const { return stateTrajectory_.bottomRows(6); }
+
+Eigen::MatrixXd TrajectoryLoader::GetArmVelTrajectory() const { return velTrajectory_.bottomRows(6); }
+
+Vector6d TrajectoryLoader::GetArmStateAtTime(double time) const {
+  int index = std::floor(time / timeStep_);
+  double delta = time - index * timeStep_;
+  Vector6d q;
+  q.setZero();
+  q = stateTrajectory_.bottomRows(6).col(index) +
+      delta / timeStep_ * (stateTrajectory_.bottomRows(6).col(index + 1) - stateTrajectory_.bottomRows(6).col(index));
+  return q;
 }
 
-Eigen::MatrixXd TrajectoryLoader::GetArmVelTrajectory() const { 
-  return velTrajectory_.bottomRows(6);
+Vector6d TrajectoryLoader::GetArmVelAtTime(double time) const {
+  int index = std::floor(time / timeStep_);
+  double delta = time - index * timeStep_;
+  Vector6d q;
+  q.setZero();
+  q = velTrajectory_.bottomRows(6).col(index) +
+      delta / timeStep_ * (velTrajectory_.bottomRows(6).col(index + 1) - stateTrajectory_.bottomRows(6).col(index));
+  return q;
 }

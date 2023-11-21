@@ -92,18 +92,20 @@ int main(int argc, char **argv) {
           ros::shutdown();
         }
 
-        
       } else if (communicator.execPriority_ == 2) {
         // execute trajectory
-        auto q_traj = traj_loader.GetArmStateTrajectory();
-        auto v_traj = traj_loader.GetArmVelTrajectory();
-        for (int i = 0; i < q_traj.cols(); i++) {
+        double t = 0.0;
+        double dt = 0.002;
+        while (t < traj_loader.totalTime_) {
+          auto q_target = traj_loader.GetArmStateAtTime(t);
+          auto v_target = traj_loader.GetArmVelAtTime(t);
           {
             std::lock_guard<std::mutex> lock(qvt_mtx);
-            q = q_traj.col(i);
-            v = v_traj.col(i);
+            q = q_target;
+            v = v_target;
           }
-          ros::Duration(0.05).sleep();
+          loop_rate.sleep();
+          t += dt;
         }
         communicator.execPriority_ = 0;
         communicator.atInitPosi_ = false;
