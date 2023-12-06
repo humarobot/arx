@@ -11,6 +11,7 @@
 #include "App/arm_control.h"
 #include <chrono>
 #include "lion_msg/armTraj.h"
+#include <mutex>
 
 enum class RobotType { real, simGazebo, simMujoco };
 
@@ -25,7 +26,7 @@ struct Joint {
 
 // Define a robot arm struct to store robot arm information
 struct RobotArm {
-  std::vector<Joint> joints{6,Joint{}};
+  std::vector<Joint> joints{6, Joint{}};
   Eigen::Vector3d position{Eigen::Vector3d::Zero()};
   Eigen::Quaterniond orientation{Eigen::Quaterniond::Identity()};
   Eigen::Matrix3d rotation{Eigen::Matrix3d::Identity()};
@@ -34,9 +35,8 @@ struct RobotArm {
 
 // Define a robot communicator to communicate with robot and planner
 class Communicator {
-public:
-  Communicator(const ros::NodeHandle &nh,
-               const RobotType type = RobotType::simGazebo);
+ public:
+  Communicator(const ros::NodeHandle &nh, const RobotType type = RobotType::simGazebo);
   virtual ~Communicator() = default;
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
@@ -53,7 +53,8 @@ public:
 
   int execPriority_{0};
   bool atInitPosi_{false};
-private:
+
+ private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);
   void ArmTrajCallback(const lion_msg::armTraj::ConstPtr &msg);
@@ -72,19 +73,18 @@ private:
   ros::Publisher joint4_pub_;
   ros::Publisher joint5_pub_;
   ros::Publisher joint6_pub_;
-  //For mujoco
+  // For mujoco
   ros::Publisher jointsTorque_pub_;
   ros::Subscriber jointsPosVel_sub_;
-  
 
   const RobotType type_;
-  RobotArm arm_state_last_{},arm_state_now_{};
-  pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(),Eigen::Vector3d(0.1,0.0,0.16)};
+  RobotArm arm_state_last_{}, arm_state_now_{};
+  pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(), Eigen::Vector3d(0.1, 0.0, 0.16)};
   bool hasNewTarget_{true};
   arx_arm arx_real{0};
 
   // Arm trajectory related variables
-  std::vector<Vector6d> qTraj_,vTraj_;
+  std::vector<Vector6d> qTraj_, vTraj_;
   int numKnots_{0};
   double totalTime_{0.0};
   bool hasNewTraj_{false};

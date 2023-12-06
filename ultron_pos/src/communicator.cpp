@@ -28,7 +28,7 @@ Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type) : nh
       arm_state_now_.v(i) = joint.velocity;
       arm_state_now_.joints.push_back(joint);
     }
-  } else if (type_ == RobotType::simMujoco){
+  } else if (type_ == RobotType::simMujoco) {
     jointsPosVel_sub_ = nh_.subscribe("/ultron_mj/jointsPosVel", 10, &Communicator::JointsPosVelCallback, this);
     jointsTorque_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/ultron_mj/jointsTorque", 1);
   }
@@ -38,11 +38,11 @@ Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type) : nh
   std::cout << "Communicator init done" << std::endl;
 }
 
-void Communicator::JointsPosVelCallback(const std_msgs::Float64MultiArrayConstPtr &msg){
+void Communicator::JointsPosVelCallback(const std_msgs::Float64MultiArrayConstPtr &msg) {
   Vector6d q, v;
-  for (int i = 0; i < 6; i++){
+  for (int i = 0; i < 6; i++) {
     q(i) = msg->data[i];
-    v(i) = msg->data[i+6];
+    v(i) = msg->data[i + 6];
   }
   std::lock_guard<std::mutex> lock(arm_state_mtx_);
   // Clear the ultron_arm_now
@@ -56,7 +56,6 @@ void Communicator::JointsPosVelCallback(const std_msgs::Float64MultiArrayConstPt
     arm_state_now_.v(i) = joint.velocity;
     arm_state_now_.joints.push_back(joint);
   }
-
 }
 
 void Communicator::ExecuteCallback(const std_msgs::Bool::ConstPtr &msg) {
@@ -191,28 +190,25 @@ void Communicator::SendRecvOnce(const Vector6d &qd, const Vector6d &vd, const Ve
     joint4_pub_.publish(joint4_msg);
     joint5_pub_.publish(joint5_msg);
     joint6_pub_.publish(joint6_msg);
-  } else if (type_ == RobotType::simMujoco){
-    
+  } else if (type_ == RobotType::simMujoco) {
     Vector6d tau_cmd = CalculateTorque(qd, vd, tau);
     // Vector6d tau_cmd = tau;
-    //print qd
+    // print qd
     // std::cout<<"tau_cmd:"<<std::endl;
     // std::cout<<tau_cmd.transpose()<<std::endl;
-    //clamp tau_cmd to [-10,10]
-    for (int i = 0; i < 6; i++){
-      if (tau_cmd(i) > 10){
+    // clamp tau_cmd to [-10,10]
+    for (int i = 0; i < 6; i++) {
+      if (tau_cmd(i) > 10) {
         tau_cmd(i) = 10;
-      }
-      else if (tau_cmd(i) < -10){
+      } else if (tau_cmd(i) < -10) {
         tau_cmd(i) = -10;
       }
     }
     std_msgs::Float64MultiArray tau_cmd_msg;
     tau_cmd_msg.data.resize(6);
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < 6; i++) {
       tau_cmd_msg.data[i] = tau_cmd(i);
     }
     jointsTorque_pub_.publish(tau_cmd_msg);
-
   }
 }

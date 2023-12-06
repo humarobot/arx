@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   tau.setZero();
 
   TrajectoryLoader traj_loader;
-  Communicator communicator(nh, RobotType::simMujoco);
+  Communicator communicator(nh, RobotType::real);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(std::string{URDF_FILE});
 
