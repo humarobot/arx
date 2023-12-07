@@ -41,6 +41,10 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
 }
 
 void Communicator::LoadTrajCallback(const std_msgs::StringConstPtr &msg) {
+  if(execPriority_ !=0){
+    ROS_INFO("\033[1;31mexecPriority_ !=0, can't load trajectory\033[0m");
+    return;
+  }
   std::string path = std::string(CMAKE_DIR) + std::string("/result/");
   std::string prefix = msg->data;
   std::string stateFilePath = path + prefix + std::string("_state.csv");
@@ -103,7 +107,7 @@ void Communicator::EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg) {
 }
 
 void Communicator::ArmTrajCallback(const lion_msg::armTraj::ConstPtr &msg) {
-  std::cout << "ArmTrajCallback" << std::endl;
+  // std::cout << "ArmTrajCallback" << std::endl;
   totalTime_ = msg->totalTime;
   numKnots_ = msg->numKnots;
   qTraj_.clear();
