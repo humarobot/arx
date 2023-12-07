@@ -34,6 +34,14 @@ class TrajectoryLoader {
     velTrajectory_ = LoadMatrix(velocityFilePath);
   }
 
+  void UpdateTrajectory(std::string stateFilePath, std::string velocityFilePath, double totalTime = 3.0,
+                        double timeStep = 0.05) {
+    totalTime_ = totalTime;
+    timeStep_ = timeStep;
+    stateTrajectory_ = LoadMatrix(stateFilePath);
+    velTrajectory_ = LoadMatrix(velocityFilePath);
+  }
+
   // Getters
   Eigen::MatrixXd GetArmStateTrajectory() const;
   Eigen::MatrixXd GetArmVelTrajectory() const;

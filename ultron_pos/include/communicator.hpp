@@ -12,6 +12,8 @@
 #include <chrono>
 #include "lion_msg/armTraj.h"
 #include <mutex>
+#include "trajectoryLoader.hpp"
+#include "std_msgs/String.h"
 
 enum class RobotType { real, simGazebo, simMujoco };
 
@@ -36,7 +38,7 @@ struct RobotArm {
 // Define a robot communicator to communicate with robot and planner
 class Communicator {
  public:
-  Communicator(const ros::NodeHandle &nh, const RobotType type = RobotType::simGazebo);
+  Communicator(const ros::NodeHandle &nh,TrajectoryLoader&, const RobotType type = RobotType::simGazebo);
   virtual ~Communicator() = default;
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
@@ -61,6 +63,8 @@ class Communicator {
   void ExecuteCallback(const std_msgs::Bool::ConstPtr &msg);
   Vector6d CalculateTorque(const Vector6d &, const Vector6d &, const Vector6d &);
   void JointsPosVelCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
+  void LoadTrajCallback(const std_msgs::String::ConstPtr &msg);
+  
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
@@ -76,6 +80,9 @@ class Communicator {
   // For mujoco
   ros::Publisher jointsTorque_pub_;
   ros::Subscriber jointsPosVel_sub_;
+
+  TrajectoryLoader& traj_loader_;
+  ros::Subscriber load_traj_sub_;
 
   const RobotType type_;
   RobotArm arm_state_last_{}, arm_state_now_{};

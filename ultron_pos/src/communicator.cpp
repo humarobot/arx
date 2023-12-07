@@ -1,6 +1,7 @@
 #include "communicator.hpp"
 
-Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type) : nh_(nh), type_(type) {
+Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loader, const RobotType type)
+    : nh_(nh), traj_loader_(traj_loader), type_(type) {
   if (type_ == RobotType::simGazebo) {
     joint1_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint1_torque_controller/command", 1);
     joint2_pub_ = nh_.advertise<std_msgs::Float64>("/ultron/joint2_torque_controller/command", 1);
@@ -33,9 +34,18 @@ Communicator::Communicator(const ros::NodeHandle &nh, const RobotType type) : nh
     jointsTorque_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/ultron_mj/jointsTorque", 1);
   }
   execute_sub_ = nh_.subscribe("/execute_traj", 10, &Communicator::ExecuteCallback, this);
+  load_traj_sub_ = nh_.subscribe("/load_traj", 10, &Communicator::LoadTrajCallback, this);
   // ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
   // arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
   std::cout << "Communicator init done" << std::endl;
+}
+
+void Communicator::LoadTrajCallback(const std_msgs::StringConstPtr &msg) {
+  std::string path = std::string(CMAKE_DIR) + std::string("/result/");
+  std::string prefix = msg->data;
+  std::string stateFilePath = path + prefix + std::string("_state.csv");
+  std::string velocityFilePath = path + prefix + std::string("_vel.csv");
+  traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath);
 }
 
 void Communicator::JointsPosVelCallback(const std_msgs::Float64MultiArrayConstPtr &msg) {
@@ -139,13 +149,25 @@ Vector6d Communicator::CalculateTorque(const Vector6d &qd, const Vector6d &vd, c
     return kp * (qd - q) + kd * (vd - v) + ff;
   };
   std::lock_guard<std::mutex> lock(arm_state_mtx_);
-  for (int i = 0; i < 3; i++)
-    tau_cmd(i) =
-        pd(60, 1.1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
-  tau_cmd(3) = pd(15, 0.8, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
-  tau_cmd(4) = pd(5, 0.5, arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
-  tau_cmd(5) = pd(5, 0.5, arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
-  return tau_cmd;
+  if (type_ == RobotType::real) {
+    for (int i = 0; i < 3; i++)
+      tau_cmd(i) =
+          pd(60, 1.1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
+    tau_cmd(3) =
+        pd(15, 0.8, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
+    tau_cmd(4) = pd(5, 0.5, arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
+    tau_cmd(5) = pd(5, 0.5, arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
+    return tau_cmd;
+  } else {
+    for (int i = 0; i < 3; i++)
+      tau_cmd(i) =
+          pd(60, 1.1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
+    tau_cmd(3) =
+        pd(15, 0.1, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
+    tau_cmd(4) = pd(5, 0., arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
+    tau_cmd(5) = pd(5, 0., arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
+    return tau_cmd;
+  }
 }
 
 void Communicator::SendRecvOnce(const Vector6d &qd, const Vector6d &vd, const Vector6d &tau) {

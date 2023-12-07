@@ -70,7 +70,7 @@ class UltronSim(MuJoCoBase):
         jointsPosVel.data = np.concatenate((qp,qv))
         self.pubJoints.publish(jointsPosVel)
         # sleep untile 2ms don't use rospy.Rate
-        while (glfw.get_time() - now) < 0.002:
+        while (glfw.get_time() - now) < 0.00198:
           pass
         # print(glfw.get_time() - now)
 
