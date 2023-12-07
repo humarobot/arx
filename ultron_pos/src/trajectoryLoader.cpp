@@ -43,9 +43,9 @@ Vector6d TrajectoryLoader::GetArmStateAtTime(double time) const {
 Vector6d TrajectoryLoader::GetArmVelAtTime(double time) const {
   int index = std::floor(time / timeStep_);
   double delta = time - index * timeStep_;
-  Vector6d q;
-  q.setZero();
-  q = velTrajectory_.bottomRows(6).col(index) +
-      delta / timeStep_ * (velTrajectory_.bottomRows(6).col(index + 1) - stateTrajectory_.bottomRows(6).col(index));
-  return q;
+  Vector6d v;
+  v.setZero();
+  v = velTrajectory_.bottomRows(6).col(index) +
+      delta / timeStep_ * (velTrajectory_.bottomRows(6).col(index + 1) - velTrajectory_.bottomRows(6).col(index));
+  return v;
 }

@@ -99,6 +99,9 @@ int main(int argc, char **argv) {
         while (t < traj_loader.totalTime_) {
           auto q_target = traj_loader.GetArmStateAtTime(t);
           auto v_target = traj_loader.GetArmVelAtTime(t);
+          // print q_target and v_target
+          // std::cout << "q_target: " << q_target.transpose() << std::endl;
+          // std::cout << "v_target: " << v_target.transpose() << std::endl;
           {
             std::lock_guard<std::mutex> lock(qvt_mtx);
             q = q_target;
