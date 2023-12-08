@@ -6,6 +6,7 @@
 #include "interpolation.hpp"
 #include "inverseKinematics.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
+#include "pinocchio/algorithm/frames.hpp"
 #include "robotPinocchioModel.hpp"
 #include "ros/ros.h"
 #include "trajectoryLoader.hpp"
@@ -52,6 +53,10 @@ int main(int argc, char **argv) {
       }
       pinocchio::nonLinearEffects(robot_pino.Model(), robot_pino.Data(), arm_state.q, arm_state.v);
       auto tau_ff = robot_pino.Data().nle;
+      pinocchio::forwardKinematics(robot_pino.Model(), robot_pino.Data(), arm_state.q);
+      pinocchio::updateFramePlacements(robot_pino.Model(), robot_pino.Data());
+      auto oMee = robot_pino.Data().oMf[robot_pino.Model().getFrameId("link6")];
+      communicator.PublishEEPose(oMee);
       {
         std::lock_guard<std::mutex> lock(qvt_mtx);
         communicator.SendRecvOnce(q, v, tau_ff);

@@ -35,6 +35,7 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
   }
   execute_sub_ = nh_.subscribe("/execute_traj", 10, &Communicator::ExecuteCallback, this);
   load_traj_sub_ = nh_.subscribe("/load_traj", 10, &Communicator::LoadTrajCallback, this);
+  ee_pose_pub_ = nh_.advertise<geometry_msgs::Pose>("/ultron/ee_pose", 1);
   // ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
   // arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
   std::cout << "Communicator init done" << std::endl;
@@ -237,4 +238,17 @@ void Communicator::SendRecvOnce(const Vector6d &qd, const Vector6d &vd, const Ve
     }
     jointsTorque_pub_.publish(tau_cmd_msg);
   }
+}
+
+void Communicator::PublishEEPose(const pinocchio::SE3 &oMee){
+  geometry_msgs::Pose ee_pose_msg;
+  ee_pose_msg.position.x = oMee.translation()(0);
+  ee_pose_msg.position.y = oMee.translation()(1);
+  ee_pose_msg.position.z = oMee.translation()(2);
+  Eigen::Quaterniond q(oMee.rotation());
+  ee_pose_msg.orientation.w = q.w();
+  ee_pose_msg.orientation.x = q.x();
+  ee_pose_msg.orientation.y = q.y();
+  ee_pose_msg.orientation.z = q.z();
+  ee_pose_pub_.publish(ee_pose_msg);
 }

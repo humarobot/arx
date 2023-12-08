@@ -49,6 +49,7 @@ class Communicator {
   void ResetNewTraj() { hasNewTraj_ = false; }
   void PrintJointState();
   std::vector<Vector6d> GetQTraj() const { return qTraj_; }
+  void PublishEEPose(const pinocchio::SE3 &oMee);
 
   std::mutex arm_state_mtx_;
   std::mutex ee_target_mtx_;
@@ -77,6 +78,8 @@ class Communicator {
   ros::Publisher joint4_pub_;
   ros::Publisher joint5_pub_;
   ros::Publisher joint6_pub_;
+  // For publishing current end-effector pose
+  ros::Publisher ee_pose_pub_;
   // For mujoco
   ros::Publisher jointsTorque_pub_;
   ros::Subscriber jointsPosVel_sub_;
