@@ -50,7 +50,12 @@ void Communicator::LoadTrajCallback(const std_msgs::StringConstPtr &msg) {
   std::string prefix = msg->data;
   std::string stateFilePath = path + prefix + std::string("_state.csv");
   std::string velocityFilePath = path + prefix + std::string("_vel.csv");
-  traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath);
+  if(prefix=="moveSin"){
+    traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath,10);
+  }else{
+    traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath);
+  }
+  
 }
 
 void Communicator::JointsPosVelCallback(const std_msgs::Float64MultiArrayConstPtr &msg) {
