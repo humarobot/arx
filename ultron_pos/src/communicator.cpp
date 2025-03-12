@@ -34,12 +34,19 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
     jointsTorque_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/ultron_mj/jointsTorque", 1);
   }
   execute_sub_ = nh_.subscribe("/execute_traj", 10, &Communicator::ExecuteCallback, this);
+  fix_pose_sub_ = nh_.subscribe("/fix_pose", 10, &Communicator::FixPoseCallback, this);
+  attack_step_sub_ = nh_.subscribe("/attack_step", 10, &Communicator::AttackCallback, this);
   load_traj_sub_ = nh_.subscribe("/load_traj", 10, &Communicator::LoadTrajCallback, this);
   ee_pose_pub_ = nh_.advertise<geometry_msgs::Pose>("/ultron/ee_pose", 1);
   ar_sub_ = nh_.subscribe("/ar_pose", 10, &Communicator::ArCallback, this);
   // ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
   // arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
   std::cout << "Communicator init done" << std::endl;
+}
+
+void Communicator::AttackCallback(const std_msgs::Int32::ConstPtr &msg) {
+  std::cout << "AttackCallback" << std::endl;
+  attack_step_ = msg->data;
 }
 
 void Communicator::ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg) {
@@ -51,15 +58,14 @@ void Communicator::ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg) 
   //                        Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
   //                        Eigen::AngleAxisd(rpy(2), Eigen::Vector3d::UnitZ());
   Eigen::Quaterniond q(msg->data[3], msg->data[4], msg->data[5], msg->data[6]);
-  if(msg->data[8] > 0.5){
+  if (msg->data[8] > 0.5) {
     hasZeroFlag_ = false;
     oMdes_.translation() = t + Eigen::Vector3d(0.08, 0, 0.16);
     oMdes_.rotation() = q;
-  }
-  else {
+  } else {
     hasZeroFlag_ = true;
     oMdes_.translation() = Eigen::Vector3d(0.08, 0, 0.16);
-    oMdes_.rotation() = Eigen::Quaterniond(1,0,0,0);
+    oMdes_.rotation() = Eigen::Quaterniond(1, 0, 0, 0);
   }
 }
 
@@ -103,6 +109,15 @@ void Communicator::ExecuteCallback(const std_msgs::Bool::ConstPtr &msg) {
   if (msg->data) {
     std::cout << "ExecuteTrajectoryCallback" << std::endl;
     execPriority_++;
+  }
+}
+
+void Communicator::FixPoseCallback(const std_msgs::Bool::ConstPtr &msg) {
+  if (msg->data) {
+    std::cout << "FixPoseCallback" << std::endl;
+    enable_fix_pose_ = true;
+  } else if (!msg->data) {
+    enable_fix_pose_ = false;
   }
 }
 

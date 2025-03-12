@@ -5,6 +5,7 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/Float64MultiArray.h"
 #include "std_msgs/Bool.h"
+#include "std_msgs/Int32.h"
 #include "geometry_msgs/Pose.h"
 #include "typeAlias.hpp"
 #include <thread>
@@ -56,8 +57,10 @@ class Communicator {
 
   int execPriority_{0};
   bool atInitPosi_{false};
+  bool enable_fix_pose_{false};
+  int attack_step_{0};
 
-  bool HasZeroFlag() const {return hasZeroFlag_; }
+  bool HasZeroFlag() const { return hasZeroFlag_; }
 
  private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
@@ -68,12 +71,16 @@ class Communicator {
   void JointsPosVelCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
   void LoadTrajCallback(const std_msgs::String::ConstPtr &msg);
   void ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
+  void FixPoseCallback(const std_msgs::Bool::ConstPtr &msg);
+  void AttackCallback(const std_msgs::Int32::ConstPtr &msg);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
   ros::Subscriber ee_target_sub_;
   ros::Subscriber arm_traj_sub_;
   ros::Subscriber execute_sub_;
+  ros::Subscriber fix_pose_sub_;
+  ros::Subscriber attack_step_sub_;
   ros::Subscriber ar_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;

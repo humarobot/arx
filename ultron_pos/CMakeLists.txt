@@ -144,45 +144,65 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(controller_node 
-src/main.cpp
+# add_executable(controller_node 
+# src/main.cpp
+# src/communicator.cpp
+# src/inverseKinematics.cpp
+# src/robotPinocchioModel.cpp
+# src/HermiteSpline.cpp
+# src/trajectoryLoader.cpp
+# )
+# target_compile_definitions(controller_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+# target_compile_definitions(controller_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# add_executable(test_node src/test.cpp)
+# add_executable(draw_spline 
+# test/drawSpline.cpp
+# src/HermiteSpline.cpp
+# )
+
+# add_executable(impedance_node 
+# src/main_impedance.cpp
+# src/communicator.cpp
+# src/inverseKinematics.cpp
+# src/robotPinocchioModel.cpp
+# src/HermiteSpline.cpp
+# src/trajectoryLoader.cpp
+# )
+# target_compile_definitions(impedance_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+# target_compile_definitions(impedance_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# add_executable(pose_node 
+# src/main_pose.cpp
+# src/communicator.cpp
+# src/inverseKinematics.cpp
+# src/robotPinocchioModel.cpp
+# src/HermiteSpline.cpp
+# src/trajectoryLoader.cpp
+# )
+# target_compile_definitions(pose_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+# target_compile_definitions(pose_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_executable(fix_pos_node 
+src/main_fix_pos.cpp
 src/communicator.cpp
 src/inverseKinematics.cpp
 src/robotPinocchioModel.cpp
 src/HermiteSpline.cpp
 src/trajectoryLoader.cpp
 )
-target_compile_definitions(controller_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
-target_compile_definitions(controller_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_executable(test_node src/test.cpp)
-add_executable(draw_spline 
-test/drawSpline.cpp
-src/HermiteSpline.cpp
-)
+target_compile_definitions(fix_pos_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+target_compile_definitions(fix_pos_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
-add_executable(impedance_node 
-src/main_impedance.cpp
+add_executable(attack_node 
+src/main_attacker.cpp
 src/communicator.cpp
 src/inverseKinematics.cpp
 src/robotPinocchioModel.cpp
 src/HermiteSpline.cpp
 src/trajectoryLoader.cpp
 )
-target_compile_definitions(impedance_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
-target_compile_definitions(impedance_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-
-add_executable(pose_node 
-src/main_pose.cpp
-src/communicator.cpp
-src/inverseKinematics.cpp
-src/robotPinocchioModel.cpp
-src/HermiteSpline.cpp
-src/trajectoryLoader.cpp
-)
-target_compile_definitions(pose_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
-target_compile_definitions(pose_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-
-
+target_compile_definitions(attack_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+target_compile_definitions(attack_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -195,31 +215,43 @@ target_compile_definitions(pose_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_D
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(controller_node
+# target_link_libraries(controller_node
+#   ${catkin_LIBRARIES}
+#   ${pinocchio_LIBRARIES}
+#   ${EIGEN3_LIBRARIES}
+# )
+
+# target_link_libraries(test_node
+#   ${catkin_LIBRARIES}
+#   ${pinocchio_LIBRARIES}
+#   ${EIGEN3_LIBRARIES}
+# )
+
+# target_link_libraries(draw_spline
+#   ${catkin_LIBRARIES}
+#   ${pinocchio_LIBRARIES}
+#   ${EIGEN3_LIBRARIES}
+# )
+
+# target_link_libraries(impedance_node
+#   ${catkin_LIBRARIES}
+#   ${pinocchio_LIBRARIES}
+#   ${EIGEN3_LIBRARIES}
+# )
+
+# target_link_libraries(pose_node
+#   ${catkin_LIBRARIES}
+#   ${pinocchio_LIBRARIES}
+#   ${EIGEN3_LIBRARIES}
+# )
+
+target_link_libraries(fix_pos_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}
 )
 
-target_link_libraries(test_node
-  ${catkin_LIBRARIES}
-  ${pinocchio_LIBRARIES}
-  ${EIGEN3_LIBRARIES}
-)
-
-target_link_libraries(draw_spline
-  ${catkin_LIBRARIES}
-  ${pinocchio_LIBRARIES}
-  ${EIGEN3_LIBRARIES}
-)
-
-target_link_libraries(impedance_node
-  ${catkin_LIBRARIES}
-  ${pinocchio_LIBRARIES}
-  ${EIGEN3_LIBRARIES}
-)
-
-target_link_libraries(pose_node
+target_link_libraries(attack_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}
