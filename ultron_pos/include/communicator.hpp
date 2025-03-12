@@ -38,7 +38,7 @@ struct RobotArm {
 // Define a robot communicator to communicate with robot and planner
 class Communicator {
  public:
-  Communicator(const ros::NodeHandle &nh,TrajectoryLoader&, const RobotType type = RobotType::simGazebo);
+  Communicator(const ros::NodeHandle &nh, TrajectoryLoader &, const RobotType type = RobotType::simGazebo);
   virtual ~Communicator() = default;
   void SendRecvOnce(const Vector6d &, const Vector6d &, const Vector6d &);
   RobotArm GetArmStateNow() const { return arm_state_now_; }
@@ -57,6 +57,8 @@ class Communicator {
   int execPriority_{0};
   bool atInitPosi_{false};
 
+  bool HasZeroFlag() const {return hasZeroFlag_; }
+
  private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void EETargetCallback(const geometry_msgs::Pose::ConstPtr &msg);
@@ -65,13 +67,14 @@ class Communicator {
   Vector6d CalculateTorque(const Vector6d &, const Vector6d &, const Vector6d &);
   void JointsPosVelCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
   void LoadTrajCallback(const std_msgs::String::ConstPtr &msg);
-  
+  void ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
   ros::Subscriber ee_target_sub_;
   ros::Subscriber arm_traj_sub_;
   ros::Subscriber execute_sub_;
+  ros::Subscriber ar_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;
   ros::Publisher joint3_pub_;
@@ -84,12 +87,12 @@ class Communicator {
   ros::Publisher jointsTorque_pub_;
   ros::Subscriber jointsPosVel_sub_;
 
-  TrajectoryLoader& traj_loader_;
+  TrajectoryLoader &traj_loader_;
   ros::Subscriber load_traj_sub_;
 
   const RobotType type_;
   RobotArm arm_state_last_{}, arm_state_now_{};
-  pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(), Eigen::Vector3d(0.1, 0.0, 0.16)};
+  pinocchio::SE3 oMdes_{Eigen::Matrix3d::Identity(), Eigen::Vector3d(0.08, 0.0, 0.16)};
   bool hasNewTarget_{true};
   arx_arm arx_real{0};
 
@@ -98,4 +101,6 @@ class Communicator {
   int numKnots_{0};
   double totalTime_{0.0};
   bool hasNewTraj_{false};
+
+  bool hasZeroFlag_{true};
 };

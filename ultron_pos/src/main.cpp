@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   tau.setZero();
 
   TrajectoryLoader traj_loader;
-  Communicator communicator(nh,traj_loader, RobotType::simMujoco);
+  Communicator communicator(nh, traj_loader, RobotType::simMujoco);
   RobotPinocchioModel robot_pino(std::string{URDF_FILE});
   InverseKinematics ik(std::string{URDF_FILE});
 
@@ -41,6 +41,9 @@ int main(int argc, char **argv) {
   q = arm_state.q;
   lock2.unlock();
 
+  double cal_time = 0.0;
+  int counter_ = 0;
+
   // print q
   std::cout << "q init: " << q.transpose() << std::endl;
 
@@ -51,11 +54,21 @@ int main(int argc, char **argv) {
         std::lock_guard<std::mutex> lock(communicator.arm_state_mtx_);
         arm_state = communicator.GetArmStateNow();
       }
+      auto t1 = std::chrono::steady_clock::now();
       pinocchio::nonLinearEffects(robot_pino.Model(), robot_pino.Data(), arm_state.q, arm_state.v);
       auto tau_ff = robot_pino.Data().nle;
       pinocchio::forwardKinematics(robot_pino.Model(), robot_pino.Data(), arm_state.q);
       pinocchio::updateFramePlacements(robot_pino.Model(), robot_pino.Data());
       auto oMee = robot_pino.Data().oMf[robot_pino.Model().getFrameId("link6")];
+      auto t2 = std::chrono::steady_clock::now();
+      cal_time += std::chrono::duration<double>(t2 - t1).count();
+      counter_++;
+      if (counter_ == 1000) {
+        std::cout << "Average calculation time: " << cal_time / counter_ << std::endl;
+        counter_ = 0;
+        cal_time = 0.0;
+      }
+
       communicator.PublishEEPose(oMee);
       {
         std::lock_guard<std::mutex> lock(qvt_mtx);

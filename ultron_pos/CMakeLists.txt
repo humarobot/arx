@@ -160,6 +160,29 @@ test/drawSpline.cpp
 src/HermiteSpline.cpp
 )
 
+add_executable(impedance_node 
+src/main_impedance.cpp
+src/communicator.cpp
+src/inverseKinematics.cpp
+src/robotPinocchioModel.cpp
+src/HermiteSpline.cpp
+src/trajectoryLoader.cpp
+)
+target_compile_definitions(impedance_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+target_compile_definitions(impedance_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_executable(pose_node 
+src/main_pose.cpp
+src/communicator.cpp
+src/inverseKinematics.cpp
+src/robotPinocchioModel.cpp
+src/HermiteSpline.cpp
+src/trajectoryLoader.cpp
+)
+target_compile_definitions(pose_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+target_compile_definitions(pose_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -185,6 +208,18 @@ target_link_libraries(test_node
 )
 
 target_link_libraries(draw_spline
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+
+target_link_libraries(impedance_node
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+
+target_link_libraries(pose_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}

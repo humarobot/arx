@@ -36,13 +36,35 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
   execute_sub_ = nh_.subscribe("/execute_traj", 10, &Communicator::ExecuteCallback, this);
   load_traj_sub_ = nh_.subscribe("/load_traj", 10, &Communicator::LoadTrajCallback, this);
   ee_pose_pub_ = nh_.advertise<geometry_msgs::Pose>("/ultron/ee_pose", 1);
+  ar_sub_ = nh_.subscribe("/ar_pose", 10, &Communicator::ArCallback, this);
   // ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
   // arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
   std::cout << "Communicator init done" << std::endl;
 }
 
+void Communicator::ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg) {
+  // std::cout << "ArCallback" << std::endl;
+  std::lock_guard<std::mutex> lock(ee_target_mtx_);
+  Eigen::Vector3d t(msg->data[0], msg->data[1], msg->data[2]);
+  Eigen::Vector3d rpy(msg->data[3], msg->data[4], msg->data[5]);
+  // Eigen::Quaterniond q = Eigen::AngleAxisd(rpy(0), Eigen::Vector3d::UnitX()) *
+  //                        Eigen::AngleAxisd(rpy(1), Eigen::Vector3d::UnitY()) *
+  //                        Eigen::AngleAxisd(rpy(2), Eigen::Vector3d::UnitZ());
+  Eigen::Quaterniond q(msg->data[3], msg->data[4], msg->data[5], msg->data[6]);
+  if(msg->data[8] > 0.5){
+    hasZeroFlag_ = false;
+    oMdes_.translation() = t + Eigen::Vector3d(0.08, 0, 0.16);
+    oMdes_.rotation() = q;
+  }
+  else {
+    hasZeroFlag_ = true;
+    oMdes_.translation() = Eigen::Vector3d(0.08, 0, 0.16);
+    oMdes_.rotation() = Eigen::Quaterniond(1,0,0,0);
+  }
+}
+
 void Communicator::LoadTrajCallback(const std_msgs::StringConstPtr &msg) {
-  if(execPriority_ !=0){
+  if (execPriority_ != 0) {
     ROS_INFO("\033[1;31mexecPriority_ !=0, can't load trajectory\033[0m");
     return;
   }
@@ -50,12 +72,11 @@ void Communicator::LoadTrajCallback(const std_msgs::StringConstPtr &msg) {
   std::string prefix = msg->data;
   std::string stateFilePath = path + prefix + std::string("_state.csv");
   std::string velocityFilePath = path + prefix + std::string("_vel.csv");
-  if(prefix=="moveSin"){
-    traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath,10);
-  }else{
+  if (prefix == "moveSin") {
+    traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath, 10);
+  } else {
     traj_loader_.UpdateTrajectory(stateFilePath, velocityFilePath);
   }
-  
 }
 
 void Communicator::JointsPosVelCallback(const std_msgs::Float64MultiArrayConstPtr &msg) {
@@ -171,11 +192,11 @@ Vector6d Communicator::CalculateTorque(const Vector6d &qd, const Vector6d &vd, c
   } else {
     for (int i = 0; i < 3; i++)
       tau_cmd(i) =
-          pd(60, 1.1, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
+          pd(50, 5.0, arm_state_now_.joints[i].position, arm_state_now_.joints[i].velocity, qd(i), vd(i), tau(i));
     tau_cmd(3) =
-        pd(15, 0.1, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
-    tau_cmd(4) = pd(5, 0., arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
-    tau_cmd(5) = pd(5, 0., arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
+        pd(15, 0.5, arm_state_now_.joints[3].position, arm_state_now_.joints[3].velocity, qd(3), vd(3), tau(3));
+    tau_cmd(4) = pd(5, 0.1, arm_state_now_.joints[4].position, arm_state_now_.joints[4].velocity, qd(4), vd(4), tau(4));
+    tau_cmd(5) = pd(5, 0.1, arm_state_now_.joints[5].position, arm_state_now_.joints[5].velocity, qd(5), vd(5), tau(5));
     return tau_cmd;
   }
 }
@@ -245,7 +266,7 @@ void Communicator::SendRecvOnce(const Vector6d &qd, const Vector6d &vd, const Ve
   }
 }
 
-void Communicator::PublishEEPose(const pinocchio::SE3 &oMee){
+void Communicator::PublishEEPose(const pinocchio::SE3 &oMee) {
   geometry_msgs::Pose ee_pose_msg;
   ee_pose_msg.position.x = oMee.translation()(0);
   ee_pose_msg.position.y = oMee.translation()(1);

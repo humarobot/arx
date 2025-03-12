@@ -49,27 +49,26 @@ class Interpolation<Trapezoidal> {
 
   void computeParameters() {
     for (int i = 0; i < num_joints; ++i) {
-      v_max(i) = 0.5*(a(i)*T - std::sqrt(a(i)*a(i)*T*T - 4*a(i)));
+      v_max(i) = 0.5 * (a(i) * T - std::sqrt(a(i) * a(i) * T * T - 4 * a(i)));
 
-      if((a(i)*T*T) < 4.0){
+      if ((a(i) * T * T) < 4.0) {
         is_feasible = false;
       }
     }
-    
   }
 
   Eigen::VectorXd getPosition(double t) const {
     Eigen::VectorXd position = Eigen::VectorXd::Zero(num_joints);
     for (int i = 0; i < num_joints; ++i) {
-      if (t < (v_max(i)/a(i))) {  // 加速阶段
+      if (t < (v_max(i) / a(i))) {  // 加速阶段
         auto s = 0.5 * a(i) * t * t;
         position(i) = theta_start(i) + s * delta_theta(i);
-      } else if (t < (T-v_max(i)/a(i))) {  // 匀速阶段
-        auto s = v_max(i)*t - v_max(i)*v_max(i)/(2*a(i));
-        position(i) = theta_start(i) + s*delta_theta(i);
+      } else if (t < (T - v_max(i) / a(i))) {  // 匀速阶段
+        auto s = v_max(i) * t - v_max(i) * v_max(i) / (2 * a(i));
+        position(i) = theta_start(i) + s * delta_theta(i);
       } else {  // 减速阶段
-        auto s =(2*a(i)*v_max(i)*T-2*v_max(i)*v_max(i)-a(i)*a(i)*(T-t)*(T-t))/(2*a(i));
-        position(i) = theta_start(i) + s*delta_theta(i);
+        auto s = (2 * a(i) * v_max(i) * T - 2 * v_max(i) * v_max(i) - a(i) * a(i) * (T - t) * (T - t)) / (2 * a(i));
+        position(i) = theta_start(i) + s * delta_theta(i);
       }
     }
     return position;
@@ -78,9 +77,9 @@ class Interpolation<Trapezoidal> {
   Eigen::VectorXd getVelocity(double t) const {
     Eigen::VectorXd velocity = Eigen::VectorXd::Zero(num_joints);
     for (int i = 0; i < num_joints; ++i) {
-      if (t < (v_max(i)/a(i))) {  // 加速阶段
+      if (t < (v_max(i) / a(i))) {  // 加速阶段
         velocity(i) = a(i) * t;
-      } else if (t < (T-v_max(i)/a(i))) {  // 匀速阶段
+      } else if (t < (T - v_max(i) / a(i))) {  // 匀速阶段
         velocity(i) = v_max(i);
       } else {  // 减速阶段
         velocity(i) = a(i) * (T - t);
