@@ -204,6 +204,17 @@ src/trajectoryLoader.cpp
 target_compile_definitions(attack_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
 target_compile_definitions(attack_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
+add_executable(attack2_node 
+src/main_attacker2.cpp
+src/communicator.cpp
+src/inverseKinematics.cpp
+src/robotPinocchioModel.cpp
+src/HermiteSpline.cpp
+src/trajectoryLoader.cpp
+)
+target_compile_definitions(attack2_node PRIVATE URDF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/urdf/ultron.urdf")
+target_compile_definitions(attack2_node PRIVATE CMAKE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -252,6 +263,11 @@ target_link_libraries(fix_pos_node
 )
 
 target_link_libraries(attack_node
+  ${catkin_LIBRARIES}
+  ${pinocchio_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+)
+target_link_libraries(attack2_node
   ${catkin_LIBRARIES}
   ${pinocchio_LIBRARIES}
   ${EIGEN3_LIBRARIES}

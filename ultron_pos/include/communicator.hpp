@@ -59,6 +59,7 @@ class Communicator {
   bool atInitPosi_{false};
   bool enable_fix_pose_{false};
   int attack_step_{0};
+  bool attack_rapid_{false};
 
   bool HasZeroFlag() const { return hasZeroFlag_; }
 
@@ -73,6 +74,7 @@ class Communicator {
   void ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
   void FixPoseCallback(const std_msgs::Bool::ConstPtr &msg);
   void AttackCallback(const std_msgs::Int32::ConstPtr &msg);
+  void AttackRapidCallback(const std_msgs::Bool::ConstPtr &msg);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
@@ -81,6 +83,7 @@ class Communicator {
   ros::Subscriber execute_sub_;
   ros::Subscriber fix_pose_sub_;
   ros::Subscriber attack_step_sub_;
+  ros::Subscriber attack_rapid_sub_;
   ros::Subscriber ar_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;

@@ -36,6 +36,7 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
   execute_sub_ = nh_.subscribe("/execute_traj", 10, &Communicator::ExecuteCallback, this);
   fix_pose_sub_ = nh_.subscribe("/fix_pose", 10, &Communicator::FixPoseCallback, this);
   attack_step_sub_ = nh_.subscribe("/attack_step", 10, &Communicator::AttackCallback, this);
+  attack_rapid_sub_ = nh_.subscribe("/attack_rapid", 10, &Communicator::AttackRapidCallback, this);
   load_traj_sub_ = nh_.subscribe("/load_traj", 10, &Communicator::LoadTrajCallback, this);
   ee_pose_pub_ = nh_.advertise<geometry_msgs::Pose>("/ultron/ee_pose", 1);
   ar_sub_ = nh_.subscribe("/ar_pose", 10, &Communicator::ArCallback, this);
@@ -47,6 +48,15 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
 void Communicator::AttackCallback(const std_msgs::Int32::ConstPtr &msg) {
   std::cout << "AttackCallback" << std::endl;
   attack_step_ = msg->data;
+}
+
+void Communicator::AttackRapidCallback(const std_msgs::Bool::ConstPtr &msg) {
+  std::cout << "AttackRapidCallback" << std::endl;
+  if (msg->data) {
+    attack_rapid_ = true;
+  } else {
+    attack_rapid_ = false;
+  }
 }
 
 void Communicator::ArCallback(const std_msgs::Float64MultiArray::ConstPtr &msg) {
