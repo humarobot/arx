@@ -1,3 +1,4 @@
+// 机械臂加载预先定义的轨迹进行运动
 #include <chrono>
 #include <thread>
 

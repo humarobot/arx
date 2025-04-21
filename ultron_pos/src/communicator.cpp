@@ -40,6 +40,7 @@ Communicator::Communicator(const ros::NodeHandle &nh, TrajectoryLoader &traj_loa
   load_traj_sub_ = nh_.subscribe("/load_traj", 10, &Communicator::LoadTrajCallback, this);
   ee_pose_pub_ = nh_.advertise<geometry_msgs::Pose>("/ultron/ee_pose", 1);
   ar_sub_ = nh_.subscribe("/ar_pose", 10, &Communicator::ArCallback, this);
+  move_base_goal_sub_ = nh_.subscribe("/move_base_simple/goal", 10, &Communicator::MoveBaseGoalCallback, this);
   // ee_target_sub_ = nh_.subscribe("ultron/ee_target", 10, &Communicator::EETargetCallback, this);
   // arm_traj_sub_ = nh_.subscribe("/arm_trajectory_topic", 10, &Communicator::ArmTrajCallback, this);
   std::cout << "Communicator init done" << std::endl;
@@ -302,4 +303,19 @@ void Communicator::PublishEEPose(const pinocchio::SE3 &oMee) {
   ee_pose_msg.orientation.y = q.y();
   ee_pose_msg.orientation.z = q.z();
   ee_pose_pub_.publish(ee_pose_msg);
+}
+
+void Communicator::MoveBaseGoalCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
+
+  move_base_goal_position_ = Eigen::Vector3d(
+    msg->pose.position.x,
+    msg->pose.position.y,
+    msg->pose.position.z
+  );
+  move_base_goal_orientation_ = Eigen::Quaterniond(
+    msg->pose.orientation.w,
+    msg->pose.orientation.x,
+    msg->pose.orientation.y,
+    msg->pose.orientation.z
+  );
 }

@@ -62,6 +62,8 @@ class Communicator {
   bool attack_rapid_{false};
 
   bool HasZeroFlag() const { return hasZeroFlag_; }
+  Eigen::Vector3d move_base_goal_position_{Eigen::Vector3d::Zero()};
+  Eigen::Quaterniond move_base_goal_orientation_{Eigen::Quaterniond::Identity()};
 
  private:
   void JointStateCallback(const sensor_msgs::JointState::ConstPtr &msg);
@@ -75,6 +77,7 @@ class Communicator {
   void FixPoseCallback(const std_msgs::Bool::ConstPtr &msg);
   void AttackCallback(const std_msgs::Int32::ConstPtr &msg);
   void AttackRapidCallback(const std_msgs::Bool::ConstPtr &msg);
+  void MoveBaseGoalCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
 
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_sub_;
@@ -85,6 +88,7 @@ class Communicator {
   ros::Subscriber attack_step_sub_;
   ros::Subscriber attack_rapid_sub_;
   ros::Subscriber ar_sub_;
+  ros::Subscriber move_base_goal_sub_;
   ros::Publisher joint1_pub_;
   ros::Publisher joint2_pub_;
   ros::Publisher joint3_pub_;
@@ -113,4 +117,7 @@ class Communicator {
   bool hasNewTraj_{false};
 
   bool hasZeroFlag_{true};
+
+
+
 };
